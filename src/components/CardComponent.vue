@@ -4,7 +4,7 @@
     <h4>{{ title }}</h4>
   </header>
     <div class="col-xl-6 col-md-6 col-xs-6 form">
-    <input v-model="todo_input" type="text" class='todo-inputs'>
+    <input v-model="todo_input" type="text" class="todo-inputs">
     <button class='todo-button' @click="addList">
       <i class='fas fa-plus-square'></i>
     </button>
@@ -20,7 +20,7 @@
     <div class="todo-container">
     <ul class="todo-list">
       <div class="todo">
-        <input type="text" v-model="todo_list[index].name" :disabled="item.edited == false || indexToEdit != index">
+        <input type="text" v-model="todo_list[index].name" @input="editList(index)" :disabled="item.edited == false || indexToEdit != index">
         <li class="todo-item"></li>
         <button @click="setDate(index)" class="deadline-btn">
           <i class="fa-solid fa-calendar"><i></i></i>
@@ -65,6 +65,12 @@
           <strong>Delete</strong>
           </q-tooltip>
         </button>
+        <button class="status-btn" for="status" @click="toggleStatus(index)">
+          <input type="checkbox" id="status" name="status" v-model="todo_list[index].status">
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+          <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
+          </q-tooltip>
+        </button>
         <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
           <q-card>
               <div class="modal-content">
@@ -106,21 +112,17 @@ export default defineComponent({
       const selectedDate = new Date(date);
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0); // Set time to midnight
-
       return selectedDate >= currentDate;
     };
 
     const timeOptions = (timeString:string) => {
       const currentTime = new Date();
       const selectedTime = new Date(currentTime);
-
       const [hours, minutes] = timeString.split(':');
       selectedTime.setHours(parseInt(hours, 10));
       selectedTime.setMinutes(parseInt(minutes, 10));
-
       return selectedTime >= currentTime;
     };
-
 
     onMounted(() => {
       const storedDataList = localStorage.getItem('todolist');
@@ -131,9 +133,9 @@ export default defineComponent({
         const data = todo_list.value[i];
         const deadline = data.deadline;
         mydeadline = deadline;
-
       }
     });
+
     return {
       title: 'To Do List',
       todo_container: ref(false),
@@ -170,8 +172,11 @@ export default defineComponent({
       localStorage.setItem('todolist', JSON.stringify(this.todo_list));
       this.todo_input = '';
     },
+    toggleStatus(index:number) {
+      this.todo_list[index].status = !this.todo_list[index].status;
+      localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+    },
     saveList(index: number) {
-      // this.todo_list[index].status = !this.todo_list[index].status;
       this.todo_list[index].edited = false;
       localStorage.setItem('todolist', JSON.stringify(this.todo_list));
     },
@@ -336,6 +341,7 @@ input {
 .trash-btn,
 .complete-btn,
 .deadline-btn,
+.status-btn,
 .edit-btn {
   color: white;
   background: #ff6f47;
@@ -344,8 +350,11 @@ input {
   border: none;
   padding: 1rem;
 }
-.complete-btn {
+.status-btn {
   background: rgb(83, 196, 83);
+}
+.complete-btn {
+  background: #E79666;
 }
 .deadline-btn {
   background: #909e94;
