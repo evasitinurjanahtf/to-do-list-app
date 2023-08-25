@@ -1,22 +1,24 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <example-component
+    <!-- <example-component
       title="Example component"
       active
       :todos="todos"
       :meta="meta"
-    ></example-component>
+    ></example-component> -->
+    <CardComponent/>
   </q-page>
 </template>
 
 <script lang="ts">
 import { Todo, Meta } from 'components/models';
-import ExampleComponent from 'components/ExampleComponent.vue';
+// import ExampleComponent from 'components/ExampleComponent.vue';
+import CardComponent from 'components/CardComponent.vue';
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { ExampleComponent },
+  components: { CardComponent },
   setup() {
     const todos = ref<Todo[]>([
       {
