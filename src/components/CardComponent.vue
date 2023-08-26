@@ -1,111 +1,139 @@
 <template>
   <div class="content">
-  <header>
-    <h4>{{ title }}</h4>
-  </header>
+    <header>
+      <h4>{{ title }}</h4>
+    </header>
     <div class="col-xl-6 col-md-6 col-xs-6 form">
-    <input v-model="todo_input" type="text" class="todo-inputs">
-    <button class='todo-button' @click="addList">
-      <i class='fas fa-plus-square'></i>
-    </button>
-    <div class="select">
-      <select name="todos" class='filter-todos' @change="filter_status($event)">
-        <option value="all">All</option>
-        <option value="true">Completed</option>
-        <option value="false">Uncompleted</option>
-      </select>
-    </div>
-  </div>
-  <div class="col-xl-6 col-md-6 col-xs-6" v-for="(item, index) of todo_list" :key="index">
-    <div class="todo-container">
-    <ul class="todo-list">
-      <div class="todo">
-        <input type="text" v-model="todo_list[index].name" @input="editList(index)" :disabled="item.edited == false || indexToEdit != index">
-        <li class="todo-item"></li>
-        <button @click="setDate(index)" class="deadline-btn">
-          <i class="fa-solid fa-calendar"><i></i></i>
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+      <input v-model="todo_input" type="text" class="todo-inputs">
+      <button @click="firstDate" class="deadline-btn">
+        <i class="fa-solid fa-calendar"><i></i></i>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
           <strong>Set Deadline Date</strong>
-          </q-tooltip>
-        </button>
-        <q-dialog v-if="index === indexToSetDate && deadline" v-model="deadline">
-          <div class="q-pa-md" style="text-align: center; max-width:350px;">
+        </q-tooltip>
+      </button>
+      <q-dialog v-model="firstDeadline">
+        <div class="q-pa-md" style="text-align: center; max-width:350px;">
           <div class="q-gutter-sm" style="margin-bottom: 5px;">
-            <q-badge color="teal"  style="padding: 10px;">
-              Deadline: {{ item.deadline }}
+            <q-badge color="teal" style="padding: 10px;">
+              Deadline: {{ model }}
             </q-badge>
           </div>
           <div class="q-gutter-md row items-start">
             <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
-            <q-time
-              v-model="model"
-              color="purple"
-              mask="YYYY-MM-DD HH:mm"
-            />
+            <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
           </div>
-          <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveDate(index)">Save Date</button>
+          <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveFirstDate">Save
+            Date</button>
           <button style="padding: 5px; margin-top: 5px;" class="btn btn-default" v-close-popup>Cancel</button>
         </div>
-        </q-dialog >
-          <button @click="saveList(index)" class="complete-btn">
-          <i class="fas fa-check"><i></i></i>
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-          <strong>Save Change</strong>
-          </q-tooltip>
-        </button>
-        <button @click="editList(index)" class="edit-btn">
-          <i class="fas fa-edit"></i>
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-          <strong>Edit</strong>
-          </q-tooltip>
-        </button>
-        <button @click="deleteList(index)" class="trash-btn">
-          <i class="fas fa-trash"><i></i></i>
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-          <strong>Delete</strong>
-          </q-tooltip>
-        </button>
-        <button class="status-btn" for="status" @click="toggleStatus(index)">
-          <input type="checkbox" id="status" name="status" v-model="todo_list[index].status">
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-          <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
-          </q-tooltip>
-        </button>
-        <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
-          <q-card>
-              <div class="modal-content">
-                <div class="modal-header">
+      </q-dialog>
+      <button class='todo-button' @click="addList">
+        <i class='fas fa-plus-square'></i>
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+          <strong>Add List</strong>
+        </q-tooltip>
+      </button>
+      <div class="select">
+        <select name="todos" class='filter-todos' @change="filter_status($event)">
+          <option value="all">All</option>
+          <option value="true">Completed</option>
+          <option value="false">Uncompleted</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-xl-6 col-md-6 col-xs-6" v-for="(item, index) of todo_list" :key="index">
+      <div class="todo-container">
+        <ul class="todo-list">
+          <div class="todo">
+            <input type="text" v-model="todo_list[index].name" @input="editList(index)"
+              :disabled="item.edited == false || indexToEdit != index">
+            <li class="todo-item"></li>
+            <button @click="setDate(index)" class="deadline-btn">
+              <i class="fa-solid fa-calendar"><i></i></i>
+              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                <strong>Set Deadline Date</strong>
+              </q-tooltip>
+            </button>
+            <q-dialog v-if="index === indexToSetDate && deadline" v-model="deadline">
+              <div class="q-pa-md" style="text-align: center; max-width:350px;">
+                <div class="q-gutter-sm" style="margin-bottom: 5px;">
+                  <q-badge color="teal" style="padding: 10px;">
+                    Deadline: {{ item.deadline }}
+                  </q-badge>
+                </div>
+                <div class="q-gutter-md row items-start">
+                  <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
+                  <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
+                </div>
+                <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveDate(index)">Save
+                  Date</button>
+                <button style="padding: 5px; margin-top: 5px;" class="btn btn-default" v-close-popup>Cancel</button>
+              </div>
+            </q-dialog>
+            <button @click="saveList(index)" class="complete-btn">
+              <i class="fas fa-check"><i></i></i>
+              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                <strong>Save Change</strong>
+              </q-tooltip>
+            </button>
+            <button @click="editList(index)" class="edit-btn">
+              <i class="fas fa-edit"></i>
+              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                <strong>Edit</strong>
+              </q-tooltip>
+            </button>
+            <button @click="deleteList(index)" class="trash-btn">
+              <i class="fas fa-trash"><i></i></i>
+              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                <strong>Delete</strong>
+              </q-tooltip>
+            </button>
+            <button class="status-btn" for="status" @click="toggleStatus(index)">
+              <input type="checkbox" id="status" name="status" v-model="todo_list[index].status">
+              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
+              </q-tooltip>
+            </button>
+            <!-- <DeleteModal :index="index" :indexToDelete="indexToDelete" :deleted="deleted(index)" /> -->
+            <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
+              <q-card>
+                <div class="modal-content">
+                  <div class="modal-header">
                     <button type="button" class="close" v-close-popup aria-label="Close">
-                        <span aria-hidden="true">×</span></button>
+                      <span aria-hidden="true">×</span></button>
                     <h6 class="modal-title">Delete Task</h6>
-                </div>
-                <div class="modal-body">
+                  </div>
+                  <div class="modal-body">
                     <p>Are you sure do you want to delete this item?</p>
-                </div>
-                <div class="modal-footer">
+                  </div>
+                  <div class="modal-footer">
                     <button type="submit" name="submit" @click="deleted(index)" class="btn btn-success">Delete</button>
                     <button type="button" class="btn btn-default btn-close" v-close-popup>Cancel</button>
+                  </div>
                 </div>
-              </div>
-          </q-card>
-        </q-dialog>
+              </q-card>
+            </q-dialog>
+          </div>
+        </ul>
       </div>
-    </ul>
-  </div>
-  </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted} from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
+import DeleteModal from './components/DeleteModal.vue'
 
 export default defineComponent({
   name: 'CardComponent',
+  compoonenst: {
+    DeleteModal
+  },
   data() {
-    const todo_list = ref<Array<{ name: string; status: boolean, edited: boolean, deadline: string}>>([]);
+    const todo_list = ref<Array<{ name: string; status: boolean, edited: boolean, deadline: string }>>([]);
     const timestamp = new Date().getTime();
-    const today_deadline = dayjs.unix(timestamp/1000).add(1,'hour').locale('id').format('YYYY-MM-DD HH:mm');
+    const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
     let mydeadline = '';
 
     const dateOptions = (date: string) => {
@@ -115,7 +143,7 @@ export default defineComponent({
       return selectedDate >= currentDate;
     };
 
-    const timeOptions = (timeString:string) => {
+    const timeOptions = (timeString: string) => {
       const currentTime = new Date();
       const selectedTime = new Date(currentTime);
       const [hours, minutes] = timeString.split(':');
@@ -129,7 +157,7 @@ export default defineComponent({
       if (storedDataList) {
         todo_list.value = JSON.parse(storedDataList);
       };
-      for(let i = 0; i < todo_list.value.length; i++) {
+      for (let i = 0; i < todo_list.value.length; i++) {
         const data = todo_list.value[i];
         const deadline = data.deadline;
         mydeadline = deadline;
@@ -144,6 +172,7 @@ export default defineComponent({
       todo_read: ref(''),
       task_done: ref(''),
       confirm: ref(false),
+      firstDeadline: ref(false),
       deadline: ref(false),
       delete: ref(false),
       indexToDelete: 0,
@@ -151,7 +180,7 @@ export default defineComponent({
       indexToEdit: 0,
       today_deadline,
       mydeadline,
-      model: ref( mydeadline ? mydeadline : today_deadline),
+      model: ref(mydeadline ? mydeadline : today_deadline),
       times: ref(''),
       dateOptions,
       timeOptions,
@@ -172,7 +201,7 @@ export default defineComponent({
       localStorage.setItem('todolist', JSON.stringify(this.todo_list));
       this.todo_input = '';
     },
-    toggleStatus(index:number) {
+    toggleStatus(index: number) {
       this.todo_list[index].status = !this.todo_list[index].status;
       localStorage.setItem('todolist', JSON.stringify(this.todo_list));
     },
@@ -190,14 +219,20 @@ export default defineComponent({
       localStorage.setItem('todolist', JSON.stringify(this.todo_list));
       this.confirm = false;
     },
-    editList(index:number) {
+    editList(index: number) {
       this.todo_list[index].edited = true;
       this.indexToEdit = index;
+    },
+    firstDate() {
+      this.firstDeadline = true;
     },
     setDate(index: number) {
       this.indexToSetDate = index;
       this.deadline = true;
       this.model = this.todo_list[index].deadline ? this.todo_list[index].deadline : this.today_deadline;
+    },
+    saveFirstDate() {
+      this.firstDeadline = false;
     },
     saveDate(index: number) {
       index = this.indexToSetDate;
@@ -208,20 +243,24 @@ export default defineComponent({
     filter_status(event: MouseEvent) {
       const selectElement = event.target as HTMLSelectElement;
       const selectedStatus = selectElement.value;
+      const storedDataList = localStorage.getItem('todolist');
+      if (storedDataList) {
+        this.todo_list = JSON.parse(storedDataList);
+      };
       let todo_done = [];
       let todo_not = [];
-      for(let i = 0; i < this.todo_list.length; i++) {
+      for (let i = 0; i < this.todo_list.length; i++) {
         const data = this.todo_list[i];
         const name = data.name;
         const status = data.status;
-        if(status === true) {
+        if (status === true) {
           todo_done.push({
             name: name,
             status: status,
             edited: false,
             deadline: this.model
           });
-        } else if(status === false) {
+        } else if (status === false) {
           todo_not.push({
             name: name,
             status: status,
@@ -230,11 +269,11 @@ export default defineComponent({
           });
         }
       };
-      if(selectedStatus == 'true') {
+      if (selectedStatus == 'true') {
         this.todo_list = todo_done;
-      } else if(selectedStatus === 'false') {
+      } else if (selectedStatus === 'false') {
         this.todo_list = todo_not;
-      } else if(selectedStatus === 'all') {
+      } else if (selectedStatus === 'all') {
         const storedDataList = localStorage.getItem('todolist');
         if (storedDataList) {
           this.todo_list = JSON.parse(storedDataList);
@@ -255,16 +294,18 @@ export default defineComponent({
   cursor: pointer;
   border: none;
 }
+
 .btn-success {
-    background-color: #00b451 !important;
-    border-color: #00b451 !important;
-    margin-right: 5px;
-    border-radius: 2px;
-    padding: 4px;
-    cursor: pointer;
-    border: none;
-    color: #ffff;
+  background-color: #00b451 !important;
+  border-color: #00b451 !important;
+  margin-right: 5px;
+  border-radius: 2px;
+  padding: 4px;
+  cursor: pointer;
+  border: none;
+  color: #ffff;
 }
+
 * {
   margin: 0px;
   padding: 0px;
@@ -275,6 +316,7 @@ header {
   font-size: 1.5rem;
   padding: 20px;
 }
+
 .form {
   padding: 15px;
 }
@@ -286,13 +328,16 @@ header,
   align-items: center;
   justify-content: center;
 }
+
 input {
   border: none;
   padding-left: 10px;
 }
+
 .completed {
   opacity: 0.5;
 }
+
 .form input,
 .form button {
   padding: 0.5rem;
@@ -324,6 +369,7 @@ input {
   min-width: 30%;
   list-style: none;
 }
+
 .todo {
   background: white;
   color: black;
@@ -338,6 +384,7 @@ input {
 .todo li {
   flex: 1;
 }
+
 .trash-btn,
 .complete-btn,
 .deadline-btn,
@@ -350,33 +397,42 @@ input {
   border: none;
   padding: 1rem;
 }
+
 .status-btn {
   background: rgb(83, 196, 83);
 }
+
 .complete-btn {
   background: #E79666;
 }
+
 .deadline-btn {
   background: #909e94;
 }
+
 .edit-btn {
   background: #f0de99;
 }
+
 .fa-check,
 .fa-trash {
   pointer-events: none;
 }
+
 .todo-item {
   padding: 0rem 0.5rem;
 }
+
 .completed {
   text-decoration: line-through;
   opacity: 0.5;
 }
+
 .fall {
   transform: translateY(8rem) rotateZ(20deg);
   opacity: 0;
 }
+
 /* select button filter button */
 select {
   -web-kit-appearance: none;
@@ -395,6 +451,7 @@ select {
   position: relative;
   overflow: hidden;
 }
+
 .select:after {
   content: "\25BC";
   position: absolute;
@@ -413,49 +470,55 @@ select {
 }
 
 .modal-content {
-    position: relative;
-    background-color: #fff;
-    background-clip: padding-box;
-    outline: 0;
-    box-shadow: 0 2px 3px rgba(0,0,0,0.125);
-    border-radius: 0;
-}
-.modal-header {
-    border-bottom-color: #f4f4f4;
-    padding: 15px;
-    border-bottom: 1px solid #e5e5e5;
-}
-.modal-title {
-    margin: 0;
-    line-height: 1.42857143;
-}
-.modal-header .close {
-    margin-top: -2px;
-}
-button.close {
-    padding: 0;
-    cursor: pointer;
-    background: 0 0;
-    border: 0;
-}
-.close {
-    float: right;
-    font-size: 21px;
-    font-weight: 700;
-    line-height: 1;
-    color: #000;
-    text-shadow: 0 1px 0 #fff;
-    opacity: .2;
-}
-.modal-body {
-    position: relative;
-    padding: 15px;
-}
-.modal-footer {
-    border-top-color: #f4f4f4;
-    padding: 15px;
-    text-align: right;
-    border-top: 1px solid #e5e5e5;
+  position: relative;
+  background-color: #fff;
+  background-clip: padding-box;
+  outline: 0;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.125);
+  border-radius: 0;
 }
 
+.modal-header {
+  border-bottom-color: #f4f4f4;
+  padding: 15px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-title {
+  margin: 0;
+  line-height: 1.42857143;
+}
+
+.modal-header .close {
+  margin-top: -2px;
+}
+
+button.close {
+  padding: 0;
+  cursor: pointer;
+  background: 0 0;
+  border: 0;
+}
+
+.close {
+  float: right;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  opacity: .2;
+}
+
+.modal-body {
+  position: relative;
+  padding: 15px;
+}
+
+.modal-footer {
+  border-top-color: #f4f4f4;
+  padding: 15px;
+  text-align: right;
+  border-top: 1px solid #e5e5e5;
+}
 </style>
