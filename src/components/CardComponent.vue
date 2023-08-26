@@ -3,8 +3,9 @@
     <header>
       <h4>{{ title }}</h4>
     </header>
-    <div class="col-xl-6 col-md-6 col-xs-6 form">
+    <!-- <div class="col-xl-6 col-md-6 col-xs-6 form">
       <input v-model="todo_input" type="text" class="todo-inputs">
+      <textarea style="min-width: 100px; height: auto; resize: none;" placeholder="Tulis teks disini..."></textarea>
       <button @click="firstDate" class="deadline-btn">
         <i class="fa-solid fa-calendar"><i></i></i>
         <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
@@ -42,7 +43,7 @@
       </div>
     </div>
     <div class="col-xl-6 col-md-6 col-xs-6" v-for="(item, index) of todo_list" :key="index">
-      <div class="todo-container">
+      <div class="todo-container" style="max-width: 300px;">
         <ul class="todo-list">
           <div class="todo">
             <input type="text" v-model="todo_list[index].name" @input="editList(index)"
@@ -94,7 +95,6 @@
                 <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
               </q-tooltip>
             </button>
-            <!-- <DeleteModal :index="index" :indexToDelete="indexToDelete" :deleted="deleted(index)" /> -->
             <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
               <q-card>
                 <div class="modal-content">
@@ -116,6 +116,44 @@
           </div>
         </ul>
       </div>
+    </div> -->
+    <div>
+      <div class="row no-wrap justify-around q-px-md q-pt-md">
+        <div v-mutation="handler1" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
+          class="drop-target rounded-borders overflow-hidden">
+          <div id="box1" draggable="true" @dragstart="onDragStart" class="box navy" />
+          <div id="box2" draggable="true" @dragstart="onDragStart" class="box red" />
+          <div id="box3" draggable="true" @dragstart="onDragStart" class="box green" />
+          <div id="box4" draggable="true" @dragstart="onDragStart" class="box orange" />
+          <div id="box5" draggable="true" @dragstart="onDragStart" class="box navy" />
+          <div id="box6" draggable="true" @dragstart="onDragStart" class="box red" />
+          <div id="box7" draggable="true" @dragstart="onDragStart" class="box green" />
+          <div id="box8" draggable="true" @dragstart="onDragStart" class="box orange" />
+        </div>
+
+        <div v-mutation="handler2" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
+          class="drop-target rounded-borders overflow-hidden" />
+      </div>
+
+      <div class="row justify-around items-start">
+        <div class="col row justify-center q-pa-md">
+          <div class="text-subtitle1">
+            Mutation Info
+          </div>
+          <div v-for="status in status1" :key="status">
+            {{ status }}
+          </div>
+        </div>
+
+        <div class="col row justify-center q-pa-md">
+          <div class="text-subtitle1">
+            Mutation Info
+          </div>
+          <div v-for="status in status2" :key="status">
+            {{ status }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -123,18 +161,18 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
-import DeleteModal from './components/DeleteModal.vue'
 
 export default defineComponent({
   name: 'CardComponent',
-  compoonenst: {
-    DeleteModal
-  },
   data() {
     const todo_list = ref<Array<{ name: string; status: boolean, edited: boolean, deadline: string }>>([]);
     const timestamp = new Date().getTime();
     const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
     let mydeadline = '';
+
+    const status1 = ref<string[]>([]);
+    const status2 = ref<string[]>([]);
+
 
     const dateOptions = (date: string) => {
       const selectedDate = new Date(date);
@@ -180,22 +218,98 @@ export default defineComponent({
       indexToEdit: 0,
       today_deadline,
       mydeadline,
-      model: ref(mydeadline ? mydeadline : today_deadline),
+      model: ref(mydeadline ? mydeadline : ''),
       times: ref(''),
       dateOptions,
       timeOptions,
+
+      status1,
+      status2,
     };
   },
   methods: {
+    handler1(mutationRecords: MutationRecord[]): void {
+      this.status1 = [];
+      for (const record of mutationRecords) {
+        const info = `type: ${record.type}, nodes added: ${record.addedNodes.length > 0 ? 'true' : 'false'
+          }, nodes removed: ${record.removedNodes.length > 0 ? 'true' : 'false'}, oldValue: ${record.oldValue}`;
+        this.status1.push(info);
+      }
+    },
+    handler2(mutationRecords: MutationRecord[]): void {
+      this.status2 = [];
+      for (const record of mutationRecords) {
+        const info = `type: ${record.type}, nodes added: ${record.addedNodes.length > 0 ? 'true' : 'false'
+          }, nodes removed: ${record.removedNodes.length > 0 ? 'true' : 'false'}, oldValue: ${record.oldValue}`;
+        this.status2.push(info);
+      }
+    },
+    onDragStart(e: DragEvent): void {
+      const dataTransfer = e.dataTransfer;
+      if (dataTransfer && e.target instanceof HTMLElement) {
+        dataTransfer.setData('text', e.target.id);
+        dataTransfer.dropEffect = 'move';
+      }
+    },
+    onDragEnter(e: DragEvent): void {
+      // don't drop on other draggables
+      if (e.target instanceof HTMLElement && e.target.draggable !== true) {
+        e.target.classList.add('drag-enter');
+      }
+    },
+    onDragLeave(e: DragEvent): void {
+      if (e.target instanceof HTMLElement) {
+        e.target.classList.remove('drag-enter');
+      }
+    },
+    onDragOver(e: DragEvent): void {
+      e.preventDefault();
+    },
+    onDrop(e: DragEvent): void {
+      e.preventDefault();
+
+      const dataTransfer = e.dataTransfer;
+      const target = e.target as HTMLElement;
+
+      if (dataTransfer && target) {
+        const draggedId = dataTransfer.getData('text');
+        const draggedEl = document.getElementById(draggedId);
+
+        if (draggedEl && draggedEl.parentNode === target) {
+          target.classList.remove('drag-enter');
+          return;
+        }
+
+        if (draggedEl && draggedEl.parentNode) {
+          draggedEl.parentNode.removeChild(draggedEl);
+        }
+
+        if (draggedEl) {
+          target.appendChild(draggedEl);
+          target.classList.remove('drag-enter');
+        }
+      }
+    },
     addList() {
       this.todo_container = true;
       if (this.todo_input !== '') {
-        this.todo_list.push({
-          name: this.todo_input,
-          status: false,
-          edited: false,
-          deadline: this.model
-        });
+        if (this.model == '') {
+          this.model = ''
+          this.todo_list.push({
+            name: this.todo_input,
+            status: false,
+            edited: false,
+            deadline: this.model
+          });
+        } else {
+          this.todo_list.push({
+            name: this.todo_input,
+            status: false,
+            edited: false,
+            deadline: this.model
+          });
+        }
+        this.model = ''
       }
       this.todo_read = this.todo_input;
       localStorage.setItem('todolist', JSON.stringify(this.todo_list));
@@ -374,7 +488,7 @@ input {
   background: white;
   color: black;
   margin: 0.5rem;
-  font-size: 1.5rem;
+  font-size: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -520,5 +634,60 @@ button.close {
   padding: 15px;
   text-align: right;
   border-top: 1px solid #e5e5e5;
+}
+
+
+.drop-target {
+  height: 400px;
+  width: 200px;
+  min-width: 200px;
+  background-color: gainsboro;
+}
+
+.drag-enter {
+  outline-style: dashed;
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+  float: left;
+  cursor: pointer;
+}
+
+@media only screen and (max-width: 500px) {
+  .drop-target {
+    height: 200px;
+    width: 100px;
+    min-width: 100px;
+    background-color: gainsboro;
+  }
+
+  .box {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+.box:nth-child(3) {
+  clear: both
+}
+
+.navy {
+  background-color: navy;
+}
+
+
+.red {
+  background-color: firebrick
+}
+
+.green {
+  background-color: darkgreen;
+}
+
+
+.orange {
+  background-color: orange
 }
 </style>
