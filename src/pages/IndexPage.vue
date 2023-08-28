@@ -6,7 +6,9 @@
       :todos="todos"
       :meta="meta"
     ></example-component> -->
-    <CardComponent/>
+    <CardComponent />
+    <PiniaPage />
+
   </q-page>
 </template>
 
@@ -14,11 +16,12 @@
 import { Todo, Meta } from 'components/models';
 // import ExampleComponent from 'components/ExampleComponent.vue';
 import CardComponent from 'components/CardComponent.vue';
+import PiniaPage from 'components/PiniaPage.vue';
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { CardComponent },
+  components: { CardComponent, PiniaPage },
   setup() {
     const todos = ref<Todo[]>([
       {

@@ -11,6 +11,18 @@
           <strong>Set Deadline Date</strong>
         </q-tooltip>
       </button>
+      <q-dialog v-model="modalDateError" persistent>
+        <q-card>
+          <div class="modal-content">
+            <div class="modal-body">
+              <p>Masukan waktu yang berbeda dengan yang lainnya</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default btn-close" @click="closeModalError">Close</button>
+            </div>
+          </div>
+        </q-card>
+      </q-dialog>
       <q-dialog v-model="firstDeadline">
         <div class="q-pa-md" style="text-align: center; max-width:350px;">
           <div class="q-gutter-sm" style="margin-bottom: 5px;">
@@ -41,16 +53,14 @@
         </select>
       </div>
     </div>
-    <div class="row no-wrap justify-around q-px-md q-pt-md">
-      <div v-mutation="handler1" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
-        class="drop-target rounded-borders overflow-hidden" style="margin-right: 20px;">
-        <div class="col-xl-6 col-md-6 col-xs-6" v-for="(item, index) of todo_list" :key="item.id" draggable="true"
-          :id="item.id" @dragstart="onDragStart">
+    <div>
+      <draggable v-model="todo_list" item-key="id" @end="saveOrder">
+        <template #item="{ element, index }">
           <div class="todo-container" style="max-width: 300px;">
             <ul class="todo-list">
               <div class="todo">
                 <input type="text" v-model="todo_list[index].name" @input="editList(index)"
-                  :disabled="item.edited == false || indexToEdit != index">
+                  :disabled="element.edited == false || indexToEdit != index">
                 <li class="todo-item"></li>
                 <button @click="setDate(index)" class="deadline-btn">
                   <i class="fa-solid fa-calendar"><i></i></i>
@@ -62,7 +72,7 @@
                   <div class="q-pa-md" style="text-align: center; max-width:350px;">
                     <div class="q-gutter-sm" style="margin-bottom: 5px;">
                       <q-badge color="teal" style="padding: 10px;">
-                        Deadline: {{ item.deadline }}
+                        Deadline: {{ element.deadline }}
                       </q-badge>
                     </div>
                     <div class="q-gutter-md row items-start">
@@ -120,10 +130,8 @@
               </div>
             </ul>
           </div>
-        </div>
-      </div>
-      <div v-mutation="handler2" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
-        class="drop-target rounded-borders overflow-hidden" />
+        </template>
+      </draggable>
     </div>
   </div>
 </template>
@@ -132,25 +140,43 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
 import { useTodoStore } from 'src/stores/store';
+import draggable from 'vuedraggable'
 
 export default defineComponent({
   name: 'CardComponent',
+  components: {
+    draggable,
+  },
   data() {
-    const todo_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string }>>([]);
+    let todo_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string }>>([]);
     const timestamp = new Date().getTime();
     const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
     const id = Date.now();
     let mydeadline = '';
 
+    const todoStore = useTodoStore();
+    const todoList = todoStore.todoList;
+
+    const saveOrder = () => {
+      todo_list.value.map(item => item.id);
+      localStorage.setItem('todolist', JSON.stringify(todo_list.value));
+    };
+
+    const loadOrder = () => {
+      const savedOrder = localStorage.getItem('todolist');
+      if (savedOrder) {
+        const order = JSON.parse(savedOrder);
+        todo_list.value.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+      }
+    };
+
     const status1 = ref<string[]>([]);
     const status2 = ref<string[]>([]);
-
-    const todoStore = useTodoStore();
 
     const dateOptions = (date: string) => {
       const selectedDate = new Date(date);
       const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0); // Set time to midnight
+      currentDate.setHours(0, 0, 0, 0);
       return selectedDate >= currentDate;
     };
 
@@ -166,21 +192,13 @@ export default defineComponent({
     onMounted(() => {
       todoStore.getFromLocalStorage()
       todo_list.value = todoStore.todoList;
-      // console.log(todoList, 'ini ada gak')
-      // const storedDataList = localStorage.getItem('todolist');
-      // if (storedDataList) {
-      //   todo_list.value = JSON.parse(storedDataList);
-      // };
-      for (let i = 0; i < todo_list.value.length; i++) {
-        const data = todo_list.value[i];
-        const deadline = data.deadline;
-        mydeadline = deadline;
-      }
+      loadOrder();
     });
 
     return {
       title: 'To Do List',
       todo_container: ref(false),
+      todoList,
       todo_list,
       todo_input: ref(''),
       todo_read: ref(''),
@@ -202,6 +220,9 @@ export default defineComponent({
       status1,
       status2,
       todoStore,
+      saveOrder,
+      loadOrder,
+      modalDateError: ref(false),
     };
   },
   methods: {
@@ -224,7 +245,7 @@ export default defineComponent({
     onDragStart(e: DragEvent): void {
       const dataTransfer = e.dataTransfer;
       if (dataTransfer && e.target instanceof HTMLElement) {
-        dataTransfer.setData('text', e.target.id);
+        dataTransfer.setData('text', e.target.id,);
         dataTransfer.dropEffect = 'move';
       }
     },
@@ -268,9 +289,10 @@ export default defineComponent({
     },
     addList() {
       this.todo_container = true;
+      this.todoStore.getFromLocalStorage()
+      this.todo_list = this.todoStore.todoList;
       if (this.todo_input !== '') {
-        if (this.model == '') {
-          this.model = ''
+        if (this.model === '') {
           this.todo_list.push({
             id: this.id.toString(),
             name: this.todo_input,
@@ -279,20 +301,30 @@ export default defineComponent({
             deadline: this.model
           });
         } else {
-          this.todo_list.push({
-            id: this.id.toString(),
-            name: this.todo_input,
-            status: false,
-            edited: false,
-            deadline: this.model
-          });
-        };
+          const existingDeadline = this.todo_list.some(data => data.deadline === this.model && this.model !== '');
+          if (existingDeadline) {
+            this.modalDateError = true;
+          } else {
+            this.todo_list.push({
+              id: this.id.toString(),
+              name: this.todo_input,
+              status: false,
+              edited: false,
+              deadline: this.model
+            });
+          }
+        }
+        this.model = '';
         this.id++;
-        this.model = ''
+        this.todo_read = this.todo_input;
+        this.todoStore.saveToLocalStorage(this.todo_list);
+        this.todo_input = '';
+      } else {
+        console.log('Empty input detected');
       }
-      this.todo_read = this.todo_input;
-      this.todoStore.saveToLocalStorage(this.todo_list);
-      this.todo_input = '';
+    },
+    closeModalError() {
+      this.modalDateError = false;
     },
     toggleStatus(index: number) {
       this.todo_list[index].status = !this.todo_list[index].status;
@@ -304,6 +336,7 @@ export default defineComponent({
     },
     deleteList(index: number) {
       this.indexToDelete = index;
+      this.todoStore.saveToLocalStorage(this.todo_list);
       this.confirm = true;
     },
     deleted(index: number) {
@@ -314,6 +347,7 @@ export default defineComponent({
     },
     editList(index: number) {
       this.todo_list[index].edited = true;
+      this.todoStore.saveToLocalStorage(this.todo_list);
       this.indexToEdit = index;
     },
     firstDate() {
@@ -367,10 +401,8 @@ export default defineComponent({
       } else if (selectedStatus === 'false') {
         this.todo_list = todo_not;
       } else if (selectedStatus === 'all') {
-        const storedDataList = localStorage.getItem('todolist');
-        if (storedDataList) {
-          this.todo_list = JSON.parse(storedDataList);
-        };
+        this.todoStore.getFromLocalStorage()
+        this.todo_list = this.todoStore.todoList;
       }
     }
   },
@@ -617,7 +649,7 @@ button.close {
 
 
 .drop-target {
-  height: 400px;
+  /* height: 400px; */
   width: 400px;
   min-width: 100px;
   background-color: gainsboro;

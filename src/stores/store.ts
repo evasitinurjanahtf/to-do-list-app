@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { createPersistedState } from 'pinia-plugin-persistedstate';
 
 // Your store definition
 interface Todo {
@@ -16,12 +17,12 @@ export const useTodoStore = defineStore('todo', {
   actions: {
     addTodo(todo: Todo) {
       this.todoList.push(todo);
-      this.saveToLocalStorage(this.todoList); // Pass the todoList to the saveToLocalStorage action
+      this.saveToLocalStorage(this.todoList);
     },
 
     saveToLocalStorage(todoList: Todo[]) {
       localStorage.setItem('todolist', JSON.stringify(todoList));
-      this.todoList = todoList; // Update the todoList state
+      this.todoList = todoList;
     },
 
     getFromLocalStorage() {
@@ -30,5 +31,7 @@ export const useTodoStore = defineStore('todo', {
         this.todoList = JSON.parse(storedTodoList);
       }
     },
+
+    plugins: [createPersistedState()],
   },
 });
