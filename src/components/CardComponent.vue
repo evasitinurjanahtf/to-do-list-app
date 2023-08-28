@@ -3,9 +3,8 @@
     <header>
       <h4>{{ title }}</h4>
     </header>
-    <!-- <div class="col-xl-6 col-md-6 col-xs-6 form">
-      <input v-model="todo_input" type="text" class="todo-inputs">
-      <textarea style="min-width: 100px; height: auto; resize: none;" placeholder="Tulis teks disini..."></textarea>
+    <div class="col-xl-6 col-md-6 col-xs-6 form">
+      <input v-model="todo_input" type="text" class="todo-inputs" />
       <button @click="firstDate" class="deadline-btn">
         <i class="fa-solid fa-calendar"><i></i></i>
         <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
@@ -42,118 +41,89 @@
         </select>
       </div>
     </div>
-    <div class="col-xl-6 col-md-6 col-xs-6" v-for="(item, index) of todo_list" :key="index">
-      <div class="todo-container" style="max-width: 300px;">
-        <ul class="todo-list">
-          <div class="todo">
-            <input type="text" v-model="todo_list[index].name" @input="editList(index)"
-              :disabled="item.edited == false || indexToEdit != index">
-            <li class="todo-item"></li>
-            <button @click="setDate(index)" class="deadline-btn">
-              <i class="fa-solid fa-calendar"><i></i></i>
-              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                <strong>Set Deadline Date</strong>
-              </q-tooltip>
-            </button>
-            <q-dialog v-if="index === indexToSetDate && deadline" v-model="deadline">
-              <div class="q-pa-md" style="text-align: center; max-width:350px;">
-                <div class="q-gutter-sm" style="margin-bottom: 5px;">
-                  <q-badge color="teal" style="padding: 10px;">
-                    Deadline: {{ item.deadline }}
-                  </q-badge>
-                </div>
-                <div class="q-gutter-md row items-start">
-                  <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
-                  <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
-                </div>
-                <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveDate(index)">Save
-                  Date</button>
-                <button style="padding: 5px; margin-top: 5px;" class="btn btn-default" v-close-popup>Cancel</button>
+    <div class="row no-wrap justify-around q-px-md q-pt-md">
+      <div v-mutation="handler1" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
+        class="drop-target rounded-borders overflow-hidden" style="margin-right: 20px;">
+        <div class="col-xl-6 col-md-6 col-xs-6" v-for="(item, index) of todo_list" :key="item.id" draggable="true"
+          :id="item.id" @dragstart="onDragStart">
+          <div class="todo-container" style="max-width: 300px;">
+            <ul class="todo-list">
+              <div class="todo">
+                <input type="text" v-model="todo_list[index].name" @input="editList(index)"
+                  :disabled="item.edited == false || indexToEdit != index">
+                <li class="todo-item"></li>
+                <button @click="setDate(index)" class="deadline-btn">
+                  <i class="fa-solid fa-calendar"><i></i></i>
+                  <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                    <strong>Set Deadline Date</strong>
+                  </q-tooltip>
+                </button>
+                <q-dialog v-if="index === indexToSetDate && deadline" v-model="deadline">
+                  <div class="q-pa-md" style="text-align: center; max-width:350px;">
+                    <div class="q-gutter-sm" style="margin-bottom: 5px;">
+                      <q-badge color="teal" style="padding: 10px;">
+                        Deadline: {{ item.deadline }}
+                      </q-badge>
+                    </div>
+                    <div class="q-gutter-md row items-start">
+                      <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
+                      <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
+                    </div>
+                    <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveDate(index)">Save
+                      Date</button>
+                    <button style="padding: 5px; margin-top: 5px;" class="btn btn-default" v-close-popup>Cancel</button>
+                  </div>
+                </q-dialog>
+                <button @click="saveList(index)" class="complete-btn">
+                  <i class="fas fa-check"><i></i></i>
+                  <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                    <strong>Save Change</strong>
+                  </q-tooltip>
+                </button>
+                <button @click="editList(index)" class="edit-btn">
+                  <i class="fas fa-edit"></i>
+                  <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                    <strong>Edit</strong>
+                  </q-tooltip>
+                </button>
+                <button @click="deleteList(index)" class="trash-btn">
+                  <i class="fas fa-trash"><i></i></i>
+                  <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                    <strong>Delete</strong>
+                  </q-tooltip>
+                </button>
+                <button class="status-btn" for="status" @click="toggleStatus(index)">
+                  <input type="checkbox" id="status" name="status" v-model="todo_list[index].status">
+                  <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                    <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
+                  </q-tooltip>
+                </button>
+                <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
+                  <q-card>
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" v-close-popup aria-label="Close">
+                          <span aria-hidden="true">×</span></button>
+                        <h6 class="modal-title">Delete Task</h6>
+                      </div>
+                      <div class="modal-body">
+                        <p>Are you sure do you want to delete this item?</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="submit" name="submit" @click="deleted(index)"
+                          class="btn btn-success">Delete</button>
+                        <button type="button" class="btn btn-default btn-close" v-close-popup>Cancel</button>
+                      </div>
+                    </div>
+                  </q-card>
+                </q-dialog>
               </div>
-            </q-dialog>
-            <button @click="saveList(index)" class="complete-btn">
-              <i class="fas fa-check"><i></i></i>
-              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                <strong>Save Change</strong>
-              </q-tooltip>
-            </button>
-            <button @click="editList(index)" class="edit-btn">
-              <i class="fas fa-edit"></i>
-              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                <strong>Edit</strong>
-              </q-tooltip>
-            </button>
-            <button @click="deleteList(index)" class="trash-btn">
-              <i class="fas fa-trash"><i></i></i>
-              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                <strong>Delete</strong>
-              </q-tooltip>
-            </button>
-            <button class="status-btn" for="status" @click="toggleStatus(index)">
-              <input type="checkbox" id="status" name="status" v-model="todo_list[index].status">
-              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
-              </q-tooltip>
-            </button>
-            <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
-              <q-card>
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <button type="button" class="close" v-close-popup aria-label="Close">
-                      <span aria-hidden="true">×</span></button>
-                    <h6 class="modal-title">Delete Task</h6>
-                  </div>
-                  <div class="modal-body">
-                    <p>Are you sure do you want to delete this item?</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit" name="submit" @click="deleted(index)" class="btn btn-success">Delete</button>
-                    <button type="button" class="btn btn-default btn-close" v-close-popup>Cancel</button>
-                  </div>
-                </div>
-              </q-card>
-            </q-dialog>
-          </div>
-        </ul>
-      </div>
-    </div> -->
-    <div>
-      <div class="row no-wrap justify-around q-px-md q-pt-md">
-        <div v-mutation="handler1" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
-          class="drop-target rounded-borders overflow-hidden">
-          <div id="box1" draggable="true" @dragstart="onDragStart" class="box navy" />
-          <div id="box2" draggable="true" @dragstart="onDragStart" class="box red" />
-          <div id="box3" draggable="true" @dragstart="onDragStart" class="box green" />
-          <div id="box4" draggable="true" @dragstart="onDragStart" class="box orange" />
-          <div id="box5" draggable="true" @dragstart="onDragStart" class="box navy" />
-          <div id="box6" draggable="true" @dragstart="onDragStart" class="box red" />
-          <div id="box7" draggable="true" @dragstart="onDragStart" class="box green" />
-          <div id="box8" draggable="true" @dragstart="onDragStart" class="box orange" />
-        </div>
-
-        <div v-mutation="handler2" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
-          class="drop-target rounded-borders overflow-hidden" />
-      </div>
-
-      <div class="row justify-around items-start">
-        <div class="col row justify-center q-pa-md">
-          <div class="text-subtitle1">
-            Mutation Info
-          </div>
-          <div v-for="status in status1" :key="status">
-            {{ status }}
-          </div>
-        </div>
-
-        <div class="col row justify-center q-pa-md">
-          <div class="text-subtitle1">
-            Mutation Info
-          </div>
-          <div v-for="status in status2" :key="status">
-            {{ status }}
+            </ul>
           </div>
         </div>
       </div>
+      <div v-mutation="handler2" @dragenter="onDragEnter" @dragleave="onDragLeave" @dragover="onDragOver" @drop="onDrop"
+        class="drop-target rounded-borders overflow-hidden" />
     </div>
   </div>
 </template>
@@ -161,18 +131,21 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
+import { useTodoStore } from 'src/stores/store';
 
 export default defineComponent({
   name: 'CardComponent',
   data() {
-    const todo_list = ref<Array<{ name: string; status: boolean, edited: boolean, deadline: string }>>([]);
+    const todo_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string }>>([]);
     const timestamp = new Date().getTime();
     const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
+    const id = Date.now();
     let mydeadline = '';
 
     const status1 = ref<string[]>([]);
     const status2 = ref<string[]>([]);
 
+    const todoStore = useTodoStore();
 
     const dateOptions = (date: string) => {
       const selectedDate = new Date(date);
@@ -191,10 +164,13 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      const storedDataList = localStorage.getItem('todolist');
-      if (storedDataList) {
-        todo_list.value = JSON.parse(storedDataList);
-      };
+      todoStore.getFromLocalStorage()
+      todo_list.value = todoStore.todoList;
+      // console.log(todoList, 'ini ada gak')
+      // const storedDataList = localStorage.getItem('todolist');
+      // if (storedDataList) {
+      //   todo_list.value = JSON.parse(storedDataList);
+      // };
       for (let i = 0; i < todo_list.value.length; i++) {
         const data = todo_list.value[i];
         const deadline = data.deadline;
@@ -220,11 +196,12 @@ export default defineComponent({
       mydeadline,
       model: ref(mydeadline ? mydeadline : ''),
       times: ref(''),
+      id,
       dateOptions,
       timeOptions,
-
       status1,
       status2,
+      todoStore,
     };
   },
   methods: {
@@ -252,7 +229,6 @@ export default defineComponent({
       }
     },
     onDragEnter(e: DragEvent): void {
-      // don't drop on other draggables
       if (e.target instanceof HTMLElement && e.target.draggable !== true) {
         e.target.classList.add('drag-enter');
       }
@@ -262,7 +238,7 @@ export default defineComponent({
         e.target.classList.remove('drag-enter');
       }
     },
-    onDragOver(e: DragEvent): void {
+    onDragOver(e: DragEvent,): void {
       e.preventDefault();
     },
     onDrop(e: DragEvent): void {
@@ -296,6 +272,7 @@ export default defineComponent({
         if (this.model == '') {
           this.model = ''
           this.todo_list.push({
+            id: this.id.toString(),
             name: this.todo_input,
             status: false,
             edited: false,
@@ -303,25 +280,27 @@ export default defineComponent({
           });
         } else {
           this.todo_list.push({
+            id: this.id.toString(),
             name: this.todo_input,
             status: false,
             edited: false,
             deadline: this.model
           });
-        }
+        };
+        this.id++;
         this.model = ''
       }
       this.todo_read = this.todo_input;
-      localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+      this.todoStore.saveToLocalStorage(this.todo_list);
       this.todo_input = '';
     },
     toggleStatus(index: number) {
       this.todo_list[index].status = !this.todo_list[index].status;
-      localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+      this.todoStore.saveToLocalStorage(this.todo_list);
     },
     saveList(index: number) {
       this.todo_list[index].edited = false;
-      localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+      this.todoStore.saveToLocalStorage(this.todo_list);
     },
     deleteList(index: number) {
       this.indexToDelete = index;
@@ -330,7 +309,7 @@ export default defineComponent({
     deleted(index: number) {
       index = this.indexToDelete;
       this.todo_list.splice(index, 1);
-      localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+      this.todoStore.saveToLocalStorage(this.todo_list);
       this.confirm = false;
     },
     editList(index: number) {
@@ -351,16 +330,14 @@ export default defineComponent({
     saveDate(index: number) {
       index = this.indexToSetDate;
       this.todo_list[index].deadline = this.model;
-      localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+      this.todoStore.saveToLocalStorage(this.todo_list);
       this.deadline = false;
     },
     filter_status(event: MouseEvent) {
       const selectElement = event.target as HTMLSelectElement;
       const selectedStatus = selectElement.value;
-      const storedDataList = localStorage.getItem('todolist');
-      if (storedDataList) {
-        this.todo_list = JSON.parse(storedDataList);
-      };
+      this.todoStore.getFromLocalStorage()
+      this.todo_list = this.todoStore.todoList;
       let todo_done = [];
       let todo_not = [];
       for (let i = 0; i < this.todo_list.length; i++) {
@@ -369,6 +346,7 @@ export default defineComponent({
         const status = data.status;
         if (status === true) {
           todo_done.push({
+            id: this.id.toString(),
             name: name,
             status: status,
             edited: false,
@@ -376,6 +354,7 @@ export default defineComponent({
           });
         } else if (status === false) {
           todo_not.push({
+            id: this.id.toString(),
             name: name,
             status: status,
             edited: false,
@@ -639,8 +618,8 @@ button.close {
 
 .drop-target {
   height: 400px;
-  width: 200px;
-  min-width: 200px;
+  width: 400px;
+  min-width: 100px;
   background-color: gainsboro;
 }
 
