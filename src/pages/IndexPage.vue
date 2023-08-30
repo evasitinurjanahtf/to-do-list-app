@@ -6,7 +6,7 @@
       :todos="todos"
       :meta="meta"
     ></example-component> -->
-    <CardComponent />
+    <CardList />
     <PiniaPage />
 
   </q-page>
@@ -15,13 +15,13 @@
 <script lang="ts">
 import { Todo, Meta } from 'components/models';
 // import ExampleComponent from 'components/ExampleComponent.vue';
-import CardComponent from 'components/CardComponent.vue';
+import CardList from 'components/CardList.vue';
 import PiniaPage from 'components/PiniaPage.vue';
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { CardComponent, PiniaPage },
+  components: { CardList, PiniaPage },
   setup() {
     const todos = ref<Todo[]>([
       {

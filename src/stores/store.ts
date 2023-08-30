@@ -8,6 +8,7 @@ interface Todo {
   status: boolean;
   edited: boolean;
   deadline: string;
+  info: string;
 }
 
 export const useTodoStore = defineStore('todo', {

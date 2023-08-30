@@ -1,5 +1,6 @@
 <template>
-  <div class="content">
+  <div></div>
+  <!-- <div class="content">
     <header>
       <h4>{{ title }}</h4>
     </header>
@@ -15,7 +16,7 @@
         <q-card>
           <div class="modal-content">
             <div class="modal-body">
-              <p>Masukan waktu yang berbeda dengan yang lainnya</p>
+              <p>Masukan waktu yang berbeda dengan task yang lainnya</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-default btn-close" @click="closeModalError">Close</button>
@@ -133,19 +134,25 @@
         </template>
       </draggable>
     </div>
-  </div>
+    <div style="margin-top: 10px; margin-bottom: 20px" class="q-pa-md row items-start q-gutter-md">
+      <CardList />
+    </div>
+
+  </div> -->
 </template>
 
-<script lang="ts">
+<!-- <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import dayjs from 'dayjs';
 import { useTodoStore } from 'src/stores/store';
-import draggable from 'vuedraggable'
+import draggable from 'vuedraggable';
+import CardList from './CardList.vue'
 
 export default defineComponent({
   name: 'CardComponent',
   components: {
     draggable,
+    CardList
   },
   data() {
     let todo_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string }>>([]);
@@ -408,7 +415,7 @@ export default defineComponent({
   },
 });
 
-</script>
+</script> -->
 
 <style scoped>
 .btn-default {
