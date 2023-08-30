@@ -313,7 +313,6 @@ export default defineComponent({
       today_deadline,
       mydeadline,
       task_date: ref(mydeadline ? mydeadline : ''),
-      times: ref(''),
       modalDateError: ref(false),
     }
   },
