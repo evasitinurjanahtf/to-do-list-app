@@ -1,9 +1,21 @@
 // app global css in SCSS form
-.q-drawer, .q-page {
-  background: linear-gradient(120deg, rgb(226, 207, 129), rgb(232, 139, 97));
+.q-drawer,
+.q-page {
+  background: radial-gradient(
+    circle at 10% 20%,
+    rgb(90, 92, 106) 0%,
+    rgb(32, 45, 58) 81.3%
+  );
   font-family: sans-serif;
   min-height: 100vh;
   color: #fff;
+}
+.q-layout__section--marginal {
+  background: radial-gradient(
+    circle at 10% 20%,
+    rgb(90, 92, 106) 0%,
+    rgb(32, 45, 58) 81.3%
+  );
 }
 .q-date__view {
   background: tan;

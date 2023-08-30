@@ -1,8 +1,17 @@
 export interface Todo {
-  id: number;
-  content: string;
+  id: string;
+  name: string;
+  status: boolean;
+  edited: boolean;
+  deadline: string;
+  info: string;
 }
 
-export interface Meta {
-  totalCount: number;
+export interface Todone {
+  id: string;
+  name: string;
+  status: boolean;
+  edited: boolean;
+  deadline: string;
+  info: string;
 }

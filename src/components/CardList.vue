@@ -7,7 +7,6 @@
         </q-avatar>
       </template>
 
-
       <template v-slot:append>
         <q-icon v-if="todo_input !== ''" name="close" @click="todo_input = ''" class="cursor-pointer" />
         <q-icon name="schedule" @click="firstDate" style="cursor: pointer;" />
@@ -18,12 +17,12 @@
         <div class="q-pa-md" style="text-align: center; max-width:350px;">
           <div class="q-gutter-sm" style="margin-bottom: 5px;">
             <q-badge color="teal" style="padding: 10px;">
-              Deadline: {{ model }}
+              Deadline: {{ task_date }}
             </q-badge>
           </div>
           <div class="q-gutter-md row items-start">
-            <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
-            <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
+            <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm" color="purple" />
+            <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
           </div>
           <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveFirstDate">Save
             Date</button>
@@ -104,8 +103,9 @@
                                   </q-badge>
                                 </div>
                                 <div class="q-gutter-md row items-start">
-                                  <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
-                                  <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
+                                  <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm"
+                                    color="purple" />
+                                  <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
                                 </div>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
                                   @click="saveDate(index, 'todolist')">Save
@@ -211,8 +211,9 @@
                                   </q-badge>
                                 </div>
                                 <div class="q-gutter-md row items-start">
-                                  <q-date :options="dateOptions" v-model="model" mask="YYYY-MM-DD HH:mm" color="purple" />
-                                  <q-time v-model="model" color="purple" mask="YYYY-MM-DD HH:mm" />
+                                  <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm"
+                                    color="purple" />
+                                  <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
                                 </div>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
                                   @click="saveDate(index, 'donelist')">Save
@@ -268,8 +269,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref } from 'vue';
 import dayjs from 'dayjs';
+import { Todo, Todone } from './models';
 import { useTodoStore } from 'src/stores/store';
 import draggable from 'vuedraggable';
 
@@ -279,91 +281,20 @@ export default defineComponent({
     draggable
   },
   data() {
-
-    let todo_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string, info: string }>>([]);
-    let listing_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string, info: string }>>([]);
-    let doing_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string, info: string }>>([]);
-    let done_list = ref<Array<{ id: string, name: string; status: boolean, edited: boolean, deadline: string, info: string }>>([]);
-
-
     const timestamp = new Date().getTime();
     const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
     const id = Date.now();
     let mydeadline = '';
 
     const todoStore = useTodoStore();
-    const todoList = todoStore.todoList;
-
-    const saveOrder = (container: string) => {
-      if (container === 'todolist') {
-        const movedItems = todo_list.value.filter(item => !done_list.value.some(i => i.id === item.id));
-        localStorage.setItem('todolist', JSON.stringify(movedItems))
-        const obj = done_list.value
-        obj.map((obj) => {
-          if (obj.status == false) {
-            obj.status = true;
-            obj.info = 'done';
-          }
-        })
-        todo_list.value.filter(item => !done_list.value.some(i => i.id === item.id));
-        localStorage.setItem('donelist', JSON.stringify(done_list.value));
-
-      } else {
-        const movedItems = done_list.value.filter(item => !todo_list.value.some(i => i.id === item.id));
-        localStorage.setItem('donelist', JSON.stringify(movedItems));
-        const obj = todo_list.value
-        obj.map((obj) => {
-          if (obj.status == true) {
-            obj.status = false;
-            obj.info = 'listing';
-          }
-        })
-        localStorage.setItem('todolist', JSON.stringify(todo_list.value));
-      }
-    };
-
-    const loadOrder = () => {
-      const savedOrder = localStorage.getItem('todolist');
-      const savedOrder2 = localStorage.getItem('donelist');
-      if (savedOrder) {
-        const order = JSON.parse(savedOrder);
-        todo_list.value.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-      }
-      if (savedOrder2) {
-        const order = JSON.parse(savedOrder2);
-        done_list.value.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-      }
-    };
-
-    const dateOptions = (date: string) => {
-      const selectedDate = new Date(date);
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-      return selectedDate >= currentDate;
-    };
-
-
-    onMounted(() => {
-      todoStore.getFromLocalStorage();
-      todo_list.value = todoStore.todoList;
-
-      const storedTodoList = localStorage.getItem('donelist');
-      if (storedTodoList) {
-        this.done_list = JSON.parse(storedTodoList);
-      }
-      loadOrder();
-    });
 
     return {
       dense: ref(false),
       teal: ref(true),
-      title: 'To Do List',
-      todo_container: ref(false),
-      todoList,
-      todo_list,
-      doing_list,
-      listing_list,
-      done_list,
+      id,
+      todoStore,
+      todo_list: ref<Array<Todo>>([]),
+      done_list: ref<Array<Todone>>([]),
       todo_input: ref(''),
       task_done: ref(''),
       confirm: ref(false),
@@ -381,32 +312,34 @@ export default defineComponent({
       indexToEditDone: 0,
       today_deadline,
       mydeadline,
-      model: ref(mydeadline ? mydeadline : ''),
+      task_date: ref(mydeadline ? mydeadline : ''),
       times: ref(''),
-      id,
-      dateOptions,
-      todoStore,
-      saveOrder,
-      loadOrder,
       modalDateError: ref(false),
     }
   },
+  mounted() {
+    this.todoStore.getFromLocalStorage();
+    this.todo_list = this.todoStore.todoList;
+
+    this.todoStore.getFromLocalStorageDone();
+    this.done_list = this.todoStore.doneList;
+
+  },
   methods: {
     addList() {
-      this.todo_container = true;
       this.todo_list = this.todoStore.todoList;
       if (this.todo_input !== '') {
-        if (this.model === '') {
+        if (this.task_date === '') {
           this.todo_list.push({
             id: this.id.toString(),
             name: this.todo_input,
             status: false,
             edited: false,
-            deadline: this.model,
+            deadline: this.task_date,
             info: ''
           });
         } else {
-          const existingDeadline = this.todo_list.some(data => data.deadline === this.model && this.model !== '');
+          const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
           if (existingDeadline) {
             this.modalDateError = true;
           } else {
@@ -415,31 +348,36 @@ export default defineComponent({
               name: this.todo_input,
               status: false,
               edited: false,
-              deadline: this.model,
+              deadline: this.task_date,
               info: ''
             });
           }
         }
-        this.model = '';
+        this.task_date = '';
         this.id++;
         this.todoStore.saveToLocalStorage(this.todo_list);
         this.todo_input = '';
-      } else {
+      }
+      else {
         console.log('Empty input detected');
       }
     },
     closeModalError() {
       this.modalDateError = false;
     },
+    dateOptions(date: string) {
+      const selectedDate = new Date(date);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      return selectedDate >= currentDate;
+    },
     toggleStatus(index: number, container: string) {
       if (container === 'todolist') {
         this.todo_list[index].status = !this.todo_list[index].status;
         this.todoStore.saveToLocalStorage(this.todo_list);
-        if (this.todo_list[index].status === true) {
-          const movedData = this.todo_list[index];
-          this.todo_list.splice(index, 1);
-          this.done_list.push(movedData);
-        }
+        const movedData = this.todo_list[index];
+        this.todo_list.splice(index, 1);
+        this.done_list.push(movedData);
         const obj = this.done_list
         obj.map((obj) => {
           if (obj.status == false) {
@@ -447,14 +385,10 @@ export default defineComponent({
             obj.info = 'done';
           }
         })
-        this.todoStore.saveToLocalStorage(this.todo_list);
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
-
       } else {
         const movedData = this.done_list[index];
         this.done_list.splice(index, 1);
         this.todo_list.push(movedData);
-
         const obj = this.todo_list;
         obj.map((obj) => {
           if (obj.status == true) {
@@ -462,10 +396,9 @@ export default defineComponent({
             obj.info = 'listing';
           }
         })
-
-        this.todoStore.saveToLocalStorage(this.todo_list);
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
       }
+      this.todoStore.saveToLocalStorage(this.todo_list);
+      this.todoStore.saveToLocalStorageDone(this.done_list);
     },
     saveList(index: number, container: string) {
       if (container === 'todolist') {
@@ -473,7 +406,7 @@ export default defineComponent({
         this.todoStore.saveToLocalStorage(this.todo_list);
       } else {
         this.done_list[index].edited = false;
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
+        this.todoStore.saveToLocalStorageDone(this.done_list);
       }
     },
     deleteList(index: number, container: string) {
@@ -483,7 +416,7 @@ export default defineComponent({
         this.confirm = true;
       } else {
         this.indexToDeleteDone = index;
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
+        this.todoStore.saveToLocalStorageDone(this.done_list);
         this.confirmDone = true;
       }
     },
@@ -496,7 +429,7 @@ export default defineComponent({
       } else {
         index = this.indexToDeleteDone;
         this.done_list.splice(index, 1);
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
+        this.todoStore.saveToLocalStorageDone(this.done_list);
         this.confirmDone = false;
       }
 
@@ -517,13 +450,12 @@ export default defineComponent({
       if (container === 'todolist') {
         this.indexToSetDate = index;
         this.deadline = true;
-        this.model = this.todo_list[index].deadline ? this.todo_list[index].deadline : this.today_deadline;
+        this.task_date = this.todo_list[index].deadline ? this.todo_list[index].deadline : this.today_deadline;
       } else {
         this.indexToSetDateDone = index;
         this.deadlineDone = true;
-        this.model = this.done_list[index].deadline ? this.done_list[index].deadline : this.today_deadline;
+        this.task_date = this.done_list[index].deadline ? this.done_list[index].deadline : this.today_deadline;
       }
-
     },
     saveFirstDate() {
       this.firstDeadline = false;
@@ -531,14 +463,41 @@ export default defineComponent({
     saveDate(index: number, container: string) {
       if (container === 'todolist') {
         index = this.indexToSetDate;
-        this.todo_list[index].deadline = this.model;
+        this.todo_list[index].deadline = this.task_date;
         this.todoStore.saveToLocalStorage(this.todo_list);
         this.deadline = false;
       } else {
         index = this.indexToSetDateDone;
-        this.done_list[index].deadline = this.model;
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
+        this.done_list[index].deadline = this.task_date;
+        this.todoStore.saveToLocalStorageDone(this.done_list);
         this.deadlineDone = false;
+      }
+    },
+    saveOrder(container: string) {
+      if (container === 'todolist') {
+        const movedItems = this.todo_list.filter(item => !this.done_list.some(i => i.id === item.id));
+        localStorage.setItem('todolist', JSON.stringify(movedItems))
+        const obj = this.done_list
+        obj.map((obj) => {
+          if (obj.status == false) {
+            obj.status = true;
+            obj.info = 'done';
+          }
+        })
+        this.todo_list.filter(item => !this.done_list.some(i => i.id === item.id));
+        this.todoStore.saveToLocalStorageDone(this.done_list);
+
+      } else {
+        const movedItems = this.done_list.filter(item => !this.todo_list.some(i => i.id === item.id));
+        localStorage.setItem('donelist', JSON.stringify(movedItems));
+        const obj = this.todo_list
+        obj.map((obj) => {
+          if (obj.status == true) {
+            obj.status = false;
+            obj.info = 'listing';
+          }
+        })
+        localStorage.setItem('todolist', JSON.stringify(this.todo_list));
       }
     },
     filter_status(event: MouseEvent) {
@@ -558,7 +517,7 @@ export default defineComponent({
             name: name,
             status: status,
             edited: false,
-            deadline: this.model,
+            deadline: this.task_date,
             info: 'listing'
           });
         } else if (status === false) {
@@ -567,7 +526,7 @@ export default defineComponent({
             name: name,
             status: status,
             edited: false,
-            deadline: this.model,
+            deadline: this.task_date,
             info: 'listing'
           });
         }
@@ -581,7 +540,7 @@ export default defineComponent({
         this.todo_list = this.todoStore.todoList;
       }
     },
-  },
+  }
 })
 </script>
 
@@ -672,34 +631,4 @@ button.close {
   text-align: right;
   border-top: 1px solid #e5e5e5;
 }
-
-/* select {
-  -web-kit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  outline: none;
-  border: none;
-  padding: 1rem;
-  width: 10rem;
-  cursor: pointer;
-  color: #ff6f47;
-}
-
-.select {
-  margin: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.select:after {
-  content: "\25BC";
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: #ff6f47;
-  color: white;
-  padding: 1rem;
-  pointer-events: none;
-  transition: all 0.3s ease;
-} */
 </style>
