@@ -50,16 +50,8 @@
       </q-card>
     </q-dialog>
 
-    <div class="select">
-      <select name="todos" class='filter-todos' @change="filter_status($event)">
-        <option value="all">All</option>
-        <option value="true">Completed</option>
-        <option value="false">Uncompleted</option>
-      </select>
-    </div>
-
     <div class="container">
-      <div class=" container-list" style="border: 1px solid black; width: 250px; padding: 10px;">
+      <div class=" container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
         <p>Task list</p>
         <draggable item-key="id" @end="saveOrder('todolist')" :list="todo_list" group="people">
           <template #item="{ element, index }">
@@ -133,7 +125,8 @@
                   <div v-if="element.edited == false" style="color: #f4f4f4">
                     {{ todo_list[index].name }}
                   </div>
-                  <input v-if="element.edited == true" type="text" class="text-subtitle2" v-model="todo_list[index].name">
+                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text"
+                    v-model="todo_list[index].name">
                 </q-card-section>
 
                 <q-separator />
@@ -164,7 +157,8 @@
         </draggable>
       </div>
 
-      <div class="container-done" style="border: 1px solid black; width: 250px; padding: 10px; margin-left:10px">
+      <div class="container-done"
+        style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
         <p>Done</p>
         <draggable item-key="id" @end="saveOrder('donelist')" :list="done_list" group="people" class="list-group">
           <template #item="{ element, index }">
@@ -238,7 +232,8 @@
                   <div v-if="element.edited == false" style="color: #f4f4f4">
                     {{ done_list[index].name }}
                   </div>
-                  <input v-if="element.edited == true" type="text" class="text-subtitle2" v-model="done_list[index].name">
+                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text"
+                    v-model="done_list[index].name">
                 </q-card-section>
 
                 <q-separator />
@@ -340,9 +335,6 @@ export default defineComponent({
       }
     };
 
-    const status1 = ref<string[]>([]);
-    const status2 = ref<string[]>([]);
-
     const dateOptions = (date: string) => {
       const selectedDate = new Date(date);
       const currentDate = new Date();
@@ -393,14 +385,10 @@ export default defineComponent({
       times: ref(''),
       id,
       dateOptions,
-      status1,
-      status2,
       todoStore,
       saveOrder,
       loadOrder,
       modalDateError: ref(false),
-      list1: [{ title: 'string1' }, { title: 'string2' }],
-      list2: [{ title: 'string2' }, { title: 'string1' }]
     }
   },
   methods: {
@@ -447,8 +435,35 @@ export default defineComponent({
       if (container === 'todolist') {
         this.todo_list[index].status = !this.todo_list[index].status;
         this.todoStore.saveToLocalStorage(this.todo_list);
+        if (this.todo_list[index].status === true) {
+          const movedData = this.todo_list[index];
+          this.todo_list.splice(index, 1);
+          this.done_list.push(movedData);
+        }
+        const obj = this.done_list
+        obj.map((obj) => {
+          if (obj.status == false) {
+            obj.status = true;
+            obj.info = 'done';
+          }
+        })
+        this.todoStore.saveToLocalStorage(this.todo_list);
+        localStorage.setItem('donelist', JSON.stringify(this.done_list));
+
       } else {
-        this.done_list[index].status = !this.done_list[index].status;
+        const movedData = this.done_list[index];
+        this.done_list.splice(index, 1);
+        this.todo_list.push(movedData);
+
+        const obj = this.todo_list;
+        obj.map((obj) => {
+          if (obj.status == true) {
+            obj.status = false;
+            obj.info = 'listing';
+          }
+        })
+
+        this.todoStore.saveToLocalStorage(this.todo_list);
         localStorage.setItem('donelist', JSON.stringify(this.done_list));
       }
     },
@@ -489,11 +504,9 @@ export default defineComponent({
     editList(index: number, container: string) {
       if (container === 'todolist') {
         this.todo_list[index].edited = true;
-        this.todoStore.saveToLocalStorage(this.todo_list);
         this.indexToEdit = index;
       } else {
         this.done_list[index].edited = true;
-        localStorage.setItem('donelist', JSON.stringify(this.done_list));
         this.indexToEditDone = index;
       }
     },
@@ -573,6 +586,15 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.to-do {
+  padding: 20px;
+}
+
+.edit-text {
+  background: #fff !important;
+  color: black !important;
+}
+
 .container {
   display: flex;
 }
