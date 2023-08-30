@@ -39,7 +39,7 @@
       <q-card>
         <div class="modal-content">
           <div class="modal-body">
-            <p>Input difference deadline</p>
+            <p>Input difference deadline please!</p>
           </div>
           <div class="modal-footer">
             <button style="background: skyblue; cursor:pointer;" type="button" class="btn btn-default btn-close"
@@ -327,31 +327,18 @@ export default defineComponent({
   methods: {
     addList() {
       this.todo_list = this.todoStore.todoList;
-      if (this.todo_input !== '') {
-        if (this.task_date === '') {
-          this.todo_list.push({
-            id: this.id.toString(),
-            name: this.todo_input,
-            status: false,
-            edited: false,
-            deadline: this.task_date,
-            info: ''
-          });
-        } else {
-          const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
-          if (existingDeadline) {
-            this.modalDateError = true;
-          } else {
-            this.todo_list.push({
-              id: this.id.toString(),
-              name: this.todo_input,
-              status: false,
-              edited: false,
-              deadline: this.task_date,
-              info: ''
-            });
-          }
-        }
+      const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
+      if (existingDeadline) {
+        this.modalDateError = true;
+      } else if (this.todo_input !== '' && !existingDeadline) {
+        this.todo_list.push({
+          id: this.id.toString(),
+          name: this.todo_input,
+          status: false,
+          edited: false,
+          deadline: this.task_date,
+          info: ''
+        });
         this.task_date = '';
         this.id++;
         this.todoStore.saveToLocalStorage(this.todo_list);
@@ -475,7 +462,7 @@ export default defineComponent({
     saveOrder(container: string) {
       if (container === 'todolist') {
         const movedItems = this.todo_list.filter(item => !this.done_list.some(i => i.id === item.id));
-        localStorage.setItem('todolist', JSON.stringify(movedItems))
+        this.todoStore.saveToLocalStorage(movedItems);
         const obj = this.done_list
         obj.map((obj) => {
           if (obj.status == false) {
@@ -485,18 +472,17 @@ export default defineComponent({
         })
         this.todo_list.filter(item => !this.done_list.some(i => i.id === item.id));
         this.todoStore.saveToLocalStorageDone(this.done_list);
-
       } else {
         const movedItems = this.done_list.filter(item => !this.todo_list.some(i => i.id === item.id));
-        localStorage.setItem('donelist', JSON.stringify(movedItems));
+        this.todoStore.saveToLocalStorageDone(movedItems);
         const obj = this.todo_list
         obj.map((obj) => {
           if (obj.status == true) {
             obj.status = false;
             obj.info = 'listing';
           }
-        })
-        localStorage.setItem('todolist', JSON.stringify(this.todo_list));
+        });
+        this.todoStore.saveToLocalStorage(this.todo_list);
       }
     },
     filter_status(event: MouseEvent) {
@@ -510,6 +496,7 @@ export default defineComponent({
         const data = this.todo_list[i];
         const name = data.name;
         const status = data.status;
+        const info = data.info;
         if (status === true) {
           todo_done.push({
             id: this.id.toString(),
@@ -517,7 +504,7 @@ export default defineComponent({
             status: status,
             edited: false,
             deadline: this.task_date,
-            info: 'listing'
+            info: info
           });
         } else if (status === false) {
           todo_not.push({
@@ -526,7 +513,7 @@ export default defineComponent({
             status: status,
             edited: false,
             deadline: this.task_date,
-            info: 'listing'
+            info: info
           });
         }
       };
