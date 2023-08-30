@@ -1,5 +1,5 @@
 export interface Todo {
-  id: string;
+  id: number;
   name: string;
   status: boolean;
   edited: boolean;
@@ -8,7 +8,7 @@ export interface Todo {
 }
 
 export interface Todone {
-  id: string;
+  id: number;
   name: string;
   status: boolean;
   edited: boolean;

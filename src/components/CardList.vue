@@ -284,7 +284,6 @@ export default defineComponent({
     const timestamp = new Date().getTime();
     const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
     const id = Date.now();
-    let mydeadline = '';
 
     const todoStore = useTodoStore();
 
@@ -311,8 +310,7 @@ export default defineComponent({
       indexToEdit: 0,
       indexToEditDone: 0,
       today_deadline,
-      mydeadline,
-      task_date: ref(mydeadline ? mydeadline : ''),
+      task_date: ref(''),
       modalDateError: ref(false),
     }
   },
@@ -332,7 +330,7 @@ export default defineComponent({
         this.modalDateError = true;
       } else if (this.todo_input !== '' && !existingDeadline) {
         this.todo_list.push({
-          id: this.id.toString(),
+          id: this.id,
           name: this.todo_input,
           status: false,
           edited: false,
@@ -364,7 +362,7 @@ export default defineComponent({
         const movedData = this.todo_list[index];
         this.todo_list.splice(index, 1);
         this.done_list.push(movedData);
-        const obj = this.done_list
+        const obj = this.done_list;
         obj.map((obj) => {
           if (obj.status == false) {
             obj.status = true;
@@ -442,6 +440,7 @@ export default defineComponent({
         this.deadlineDone = true;
         this.task_date = this.done_list[index].deadline ? this.done_list[index].deadline : this.today_deadline;
       }
+      this.task_date = '';
     },
     saveFirstDate() {
       this.firstDeadline = false;
@@ -458,6 +457,7 @@ export default defineComponent({
         this.todoStore.saveToLocalStorageDone(this.done_list);
         this.deadlineDone = false;
       }
+      this.task_date = '';
     },
     saveOrder(container: string) {
       if (container === 'todolist') {
@@ -499,7 +499,7 @@ export default defineComponent({
         const info = data.info;
         if (status === true) {
           todo_done.push({
-            id: this.id.toString(),
+            id: this.id,
             name: name,
             status: status,
             edited: false,
@@ -508,7 +508,7 @@ export default defineComponent({
           });
         } else if (status === false) {
           todo_not.push({
-            id: this.id.toString(),
+            id: this.id,
             name: name,
             status: status,
             edited: false,
