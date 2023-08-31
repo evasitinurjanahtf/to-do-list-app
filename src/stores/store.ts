@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { createPersistedState } from 'pinia-plugin-persistedstate';
-import { Todo, Todone } from '../components/models';
+import { Todo, Todone, Cardlist } from '../components/models';
 
 // Your store definition
 
@@ -8,6 +8,7 @@ export const useTodoStore = defineStore('todo', {
   state: () => ({
     todoList: [] as Todo[],
     doneList: [] as Todone[],
+    CardList: [] as Cardlist[],
   }),
   actions: {
     addTodo(todo: Todo) {

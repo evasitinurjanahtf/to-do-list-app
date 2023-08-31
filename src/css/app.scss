@@ -9,6 +9,7 @@
   font-family: sans-serif;
   min-height: 100vh;
   color: #fff;
+  overflow-y: scroll;
 }
 .q-layout__section--marginal {
   background: radial-gradient(
@@ -23,6 +24,6 @@
 .q-time__container-parent {
   background: antiquewhite;
 }
-.items-start {
-  justify-content: center;
-}
+// .items-start {
+//   justify-content: center;
+// }
