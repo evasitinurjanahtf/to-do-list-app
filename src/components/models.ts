@@ -15,3 +15,12 @@ export interface Todone {
   deadline: string;
   info: string;
 }
+
+export interface Totask {
+  id: string;
+  name: string;
+  status: boolean;
+  edited: boolean;
+  deadline: string;
+  info: string;
+}

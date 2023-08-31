@@ -49,12 +49,14 @@
       </q-card>
     </q-dialog>
 
+    {{ todo_list }}
     <div class="container">
       <div class=" container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
         <p>Task list</p>
-        <draggable item-key="id" @end="saveOrder('todolist')" :list="todo_list" group="people">
+        <draggable class="todo-start" item-key="id" @end="saveOrder" :list="todo_list.filter((x) => x.status == false)"
+          :group="{ name: 'people', pull: true, put: true }">
           <template #item="{ element, index }">
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px;" :class="'asd' + element.id">
               <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
@@ -68,7 +70,7 @@
                       <q-btn color="grey-7" round flat icon="more_vert">
                         <q-menu cover>
                           <q-list>
-                            <q-item clickable @click="deleteList(index, 'todolist')">
+                            <q-item clickable @click="deleteList(index, '001')">
                               <q-item-section>Remove Card</q-item-section>
                             </q-item>
                             <q-dialog v-if="index === indexToDelete && confirm" v-model="confirm" persistent>
@@ -84,15 +86,14 @@
                                   </div>
                                   <div class="modal-footer">
                                     <button style="background: crimson;margin-right: 5px; cursor:pointer;" type="submit"
-                                      name="submit" @click="deleted(index, 'todolist')"
-                                      class="btn btn-success">Remove</button>
+                                      name="submit" @click="deleted(index, '001')" class="btn btn-success">Remove</button>
                                     <button style="background: azure;cursor:pointer;" type="button"
                                       class="btn btn-default btn-close" v-close-popup>Cancel</button>
                                   </div>
                                 </div>
                               </q-card>
                             </q-dialog>
-                            <q-item clickable @click="setDate(index, 'todolist')">
+                            <q-item clickable @click="setDate(index, '001')">
                               <q-item-section>Set Deadline</q-item-section>
                             </q-item>
                             <q-dialog v-if="index === indexToSetDate && deadline" v-model="deadline">
@@ -108,7 +109,7 @@
                                   <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
                                 </div>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
-                                  @click="saveDate(index, 'todolist')">Save
+                                  @click="saveDate(index, '001')">Save
                                   Date</button>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-default"
                                   v-close-popup>Cancel</button>
@@ -123,33 +124,27 @@
 
                 <q-card-section>
                   <div v-if="element.edited == false" style="color: #f4f4f4">
-                    {{ todo_list[index].name }}
+                    {{ element.name }}
                   </div>
                   <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text"
-                    v-model="todo_list[index].name">
+                    v-model="element.name">
                 </q-card-section>
 
                 <q-separator />
 
                 <q-card-actions style="display: flex; justify-content: space-between;">
                   <div class="save-edit">
-                    <q-btn flat @click="editList(index, 'todolist')"><i class="fas fa-edit"></i>
+                    <q-btn flat @click="editList(index, '001')"><i class="fas fa-edit"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Edit</strong>
                       </q-tooltip></q-btn>
-                    <q-btn flat @click="saveList(index, 'todolist')"><i class="fas fa-check"></i>
+                    <q-btn flat @click="saveList(index, '001')"><i class="fas fa-check"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Save</strong>
                       </q-tooltip>
                     </q-btn>
                   </div>
 
-                  <q-btn @click="toggleStatus(index, 'todolist')">
-                    <input type="checkbox" id="status" name="status" v-model="todo_list[index].status">
-                    <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                      <strong>{{ todo_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
-                    </q-tooltip>Done
-                  </q-btn>
                 </q-card-actions>
               </q-card>
             </div>
@@ -160,15 +155,16 @@
       <div class="container-done"
         style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
         <p>Done</p>
-        <draggable item-key="id" @end="saveOrder('donelist')" :list="done_list" group="people" class="list-group">
+        <draggable item-key="id" @end="saveOrder" :list="todo_list.filter((x) => x.status == true)"
+          :group="{ name: 'people', pull: true, put: true }" class="todo-done">
           <template #item="{ element, index }">
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px;" :class="'asd' + element.id">
               <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
                       <div class="text-subtitle2">
-                        <p>Deadline Task : {{ done_list[index].deadline }}</p>
+                        <p>Deadline Task : {{ todo_list[index].deadline }}</p>
                       </div>
                     </div>
 
@@ -176,7 +172,7 @@
                       <q-btn color="grey-7" round flat icon="more_vert">
                         <q-menu cover>
                           <q-list>
-                            <q-item clickable @click="deleteList(index, 'donelist')">
+                            <q-item clickable @click="deleteList(index, '002')">
                               <q-item-section>Remove Card</q-item-section>
                             </q-item>
                             <q-dialog v-if="index === indexToDeleteDone && confirmDone" v-model="confirmDone" persistent>
@@ -192,15 +188,14 @@
                                   </div>
                                   <div class="modal-footer">
                                     <button style="background: crimson;margin-right: 5px; cursor:pointer;" type="submit"
-                                      name="submit" @click="deleted(index, 'donelist')"
-                                      class="btn btn-success">Remove</button>
+                                      name="submit" @click="deleted(index, '002')" class="btn btn-success">Remove</button>
                                     <button style="background: azure;cursor:pointer;" type="button"
                                       class="btn btn-default btn-close" v-close-popup>Cancel</button>
                                   </div>
                                 </div>
                               </q-card>
                             </q-dialog>
-                            <q-item clickable @click="setDate(index, 'donelist')">
+                            <q-item clickable @click="setDate(index, '002')">
                               <q-item-section>Set Deadline</q-item-section>
                             </q-item>
                             <q-dialog v-if="index === indexToSetDateDone && deadlineDone" v-model="deadlineDone">
@@ -216,7 +211,7 @@
                                   <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
                                 </div>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
-                                  @click="saveDate(index, 'donelist')">Save
+                                  @click="saveDate(index, '002')">Save
                                   Date</button>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-default"
                                   v-close-popup>Cancel</button>
@@ -231,33 +226,26 @@
 
                 <q-card-section>
                   <div v-if="element.edited == false" style="color: #f4f4f4">
-                    {{ done_list[index].name }}
+                    {{ element.name }}
                   </div>
                   <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text"
-                    v-model="done_list[index].name">
+                    v-model="element.name">
                 </q-card-section>
 
                 <q-separator />
 
                 <q-card-actions style="display: flex; justify-content: space-between;">
                   <div class="save-edit">
-                    <q-btn flat @click="editList(index, 'donelist')"><i class="fas fa-edit"></i>
+                    <q-btn flat @click="editList(index, '002')"><i class="fas fa-edit"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Edit</strong>
                       </q-tooltip></q-btn>
-                    <q-btn flat @click="saveList(index, 'donelist')"><i class="fas fa-check"></i>
+                    <q-btn flat @click="saveList(index, '002')"><i class="fas fa-check"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Save</strong>
                       </q-tooltip>
                     </q-btn>
                   </div>
-
-                  <q-btn @click="toggleStatus(index, 'donelist')">
-                    <input type="checkbox" id="status" name="status" v-model="done_list[index].status">
-                    <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                      <strong>{{ done_list[index].status == true ? 'Not yet' : 'Done' }}</strong>
-                    </q-tooltip>Done
-                  </q-btn>
                 </q-card-actions>
               </q-card>
             </div>
@@ -271,9 +259,10 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import dayjs from 'dayjs';
-import { Todo, Todone } from './models';
+import { Todo, Todone, Totask } from './models';
 import { useTodoStore } from 'src/stores/store';
 import draggable from 'vuedraggable';
+import { AnyMxRecord } from 'dns';
 
 export default defineComponent({
   name: 'CardList',
@@ -295,6 +284,7 @@ export default defineComponent({
       todoStore,
       todo_list: ref<Array<Todo>>([]),
       done_list: ref<Array<Todone>>([]),
+      task_list: ref<Array<Totask>>([]),
       todo_input: ref(''),
       task_done: ref(''),
       confirm: ref(false),
@@ -320,13 +310,10 @@ export default defineComponent({
     this.todoStore.getFromLocalStorage();
     this.todo_list = this.todoStore.todoList;
 
-    this.todoStore.getFromLocalStorageDone();
-    this.done_list = this.todoStore.doneList;
 
   },
   methods: {
     addList() {
-      this.todo_list = this.todoStore.todoList;
       const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
       if (existingDeadline) {
         this.modalDateError = true;
@@ -358,36 +345,15 @@ export default defineComponent({
       return selectedDate >= currentDate;
     },
     toggleStatus(index: number, container: string) {
-      if (container === 'todolist') {
-        this.todo_list[index].status = !this.todo_list[index].status;
-        this.todoStore.saveToLocalStorage(this.todo_list);
-        const movedData = this.todo_list[index];
-        this.todo_list.splice(index, 1);
-        this.done_list.push(movedData);
-        const obj = this.done_list
-        obj.map((obj) => {
-          if (obj.status == false) {
-            obj.status = true;
-            obj.info = 'done';
-          }
-        })
+      if (container === '001') {
+        this.todo_list[index].status = true;
       } else {
-        const movedData = this.done_list[index];
-        this.done_list.splice(index, 1);
-        this.todo_list.push(movedData);
-        const obj = this.todo_list;
-        obj.map((obj) => {
-          if (obj.status == true) {
-            obj.status = false;
-            obj.info = 'listing';
-          }
-        })
+        this.todo_list[index].status = false;
       }
       this.todoStore.saveToLocalStorage(this.todo_list);
-      this.todoStore.saveToLocalStorageDone(this.done_list);
     },
     saveList(index: number, container: string) {
-      if (container === 'todolist') {
+      if (container === '001') {
         this.todo_list[index].edited = false;
         this.todoStore.saveToLocalStorage(this.todo_list);
       } else {
@@ -396,7 +362,7 @@ export default defineComponent({
       }
     },
     deleteList(index: number, container: string) {
-      if (container === 'todolist') {
+      if (container === '001') {
         this.indexToDelete = index;
         this.todoStore.saveToLocalStorage(this.todo_list);
         this.confirm = true;
@@ -407,7 +373,7 @@ export default defineComponent({
       }
     },
     deleted(index: number, container: string) {
-      if (container === 'todolist') {
+      if (container === '001') {
         index = this.indexToDelete;
         this.todo_list.splice(index, 1);
         this.todoStore.saveToLocalStorage(this.todo_list);
@@ -421,7 +387,7 @@ export default defineComponent({
 
     },
     editList(index: number, container: string) {
-      if (container === 'todolist') {
+      if (container === '001') {
         this.todo_list[index].edited = true;
         this.indexToEdit = index;
       } else {
@@ -433,7 +399,7 @@ export default defineComponent({
       this.firstDeadline = true;
     },
     setDate(index: number, container: string) {
-      if (container === 'todolist') {
+      if (container === '001') {
         this.indexToSetDate = index;
         this.deadline = true;
         this.task_date = this.todo_list[index].deadline ? this.todo_list[index].deadline : this.today_deadline;
@@ -447,7 +413,7 @@ export default defineComponent({
       this.firstDeadline = false;
     },
     saveDate(index: number, container: string) {
-      if (container === 'todolist') {
+      if (container === '001') {
         index = this.indexToSetDate;
         this.todo_list[index].deadline = this.task_date;
         this.todoStore.saveToLocalStorage(this.todo_list);
@@ -459,30 +425,29 @@ export default defineComponent({
         this.deadlineDone = false;
       }
     },
-    saveOrder(container: string) {
-      if (container === 'todolist') {
-        const movedItems = this.todo_list.filter(item => !this.done_list.some(i => i.id === item.id));
-        this.todoStore.saveToLocalStorage(movedItems);
-        const obj = this.done_list
-        obj.map((obj) => {
-          if (obj.status == false) {
-            obj.status = true;
-            obj.info = 'done';
-          }
-        })
-        this.todo_list.filter(item => !this.done_list.some(i => i.id === item.id));
-        this.todoStore.saveToLocalStorageDone(this.done_list);
-      } else {
-        const movedItems = this.done_list.filter(item => !this.todo_list.some(i => i.id === item.id));
-        this.todoStore.saveToLocalStorageDone(movedItems);
-        const obj = this.todo_list
-        obj.map((obj) => {
-          if (obj.status == true) {
-            obj.status = false;
-            obj.info = 'listing';
-          }
-        });
+    saveOrder(container: any) {
+      try {
+        const containerValue = container.to.classList.value
+        if (containerValue.includes('todo-done')) {
+        } else {
+
+        }
+        const itemValue = container.item;
+        let i = itemValue.classList.value.split('asd')[1];
+        console.log(i);
+        console.log(this.todo_list.findIndex((x) => x.id == i));
+
+        let temp = this.todo_list[this.todo_list.findIndex((x) => x.id == i)];
+        if (container.to.classList.value.includes('todo-done')) {
+          temp.status = true;
+        } else {
+          temp.status = false;
+        }
+        this.todo_list[i] = temp;
         this.todoStore.saveToLocalStorage(this.todo_list);
+      } catch (error) {
+        console.log(error);
+
       }
     },
     filter_status(event: MouseEvent) {
