@@ -49,7 +49,6 @@
       </q-card>
     </q-dialog>
 
-    {{ todo_list }}
     <div class="container">
       <div class=" container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
         <p>Task list</p>
@@ -162,7 +161,7 @@
         style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
         <p>Done</p>
         <draggable item-key="id" @end="saveOrder" :list="todo_list.filter((x) => x.status == true)"
-          :group="{ name: 'people', pull: true, put: true }" class="todo-done">
+          :group="{ name: 'people1', pull: true, put: true }" class="todo-done">
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
               <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
@@ -271,7 +270,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import dayjs from 'dayjs';
-import { Todo } from './models';
+import { Todo, ContainerType } from './models';
 import { useTodoStore } from 'src/stores/store';
 import draggable from 'vuedraggable';
 
@@ -400,29 +399,34 @@ export default defineComponent({
       this.todoStore.saveToLocalStorage(this.todo_list);
       this.deadline = false;
     },
-    saveOrder(container: any) {
+    saveOrder(container: ContainerType) {
       try {
-        const containerValue = container.to.classList.value
-        if (containerValue.includes('todo-done')) {
-        } else {
-
-        }
+        const newIndex = container.newIndex;
+        const oldIndex = container.oldIndex;
         const itemValue = container.item;
-        let i = itemValue.classList.value.split('random')[1];
-        console.log(i);
-        console.log(this.todo_list.findIndex((x) => x.id == i));
-
-        let temp = this.todo_list[this.todo_list.findIndex((x) => x.id == i)];
+        let item_id = parseInt(itemValue.classList.value.split('random')[1]);
+        let temp = this.todo_list[this.todo_list.findIndex((x) => x.id == item_id)];
         if (container.to.classList.value.includes('todo-done')) {
           temp.status = true;
+          this.todo_list.sort((a, b) => {
+            return a.status === b.status ? 0 : a.status ? -1 : 1;
+          });
+          const itemToMove = this.todo_list[oldIndex];
+          this.todo_list.splice(oldIndex, 1);
+          this.todo_list.splice(newIndex, 0, itemToMove);
         } else {
           temp.status = false;
+          this.todo_list.sort((a, b) => {
+            return b.status === a.status ? 0 : b.status ? -1 : 1;
+          });
+          const itemToMove = this.todo_list[oldIndex];
+          this.todo_list.splice(oldIndex, 1);
+          this.todo_list.splice(newIndex, 0, itemToMove);
         }
-        this.todo_list[i] = temp;
+        this.todo_list[item_id] = temp;
         this.todoStore.saveToLocalStorage(this.todo_list);
       } catch (error) {
         console.log(error);
-
       }
     },
   }

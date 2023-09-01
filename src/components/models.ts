@@ -6,3 +6,11 @@ export interface Todo {
   deadline: string;
   info: string;
 }
+
+export interface ContainerType {
+  newIndex: number;
+  oldIndex: number;
+  item: HTMLElement;
+  to: HTMLElement;
+  item_id: number;
+}
