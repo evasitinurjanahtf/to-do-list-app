@@ -48,11 +48,11 @@
         </div>
       </q-card>
     </q-dialog>
-
+    {{ todo_list }}
     <div class="container">
-      <div class=" container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
+      <div class="container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
         <p>Task list</p>
-        <draggable class="todo-start" item-key="id" @end="saveOrder" :list="todo_list.filter((x) => x.status == false)"
+        <draggable class="todo-start" item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info == 1)"
           :group="{ name: 'people', pull: true, put: true }">
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
@@ -125,8 +125,7 @@
                   <div v-if="element.edited == false" style="color: #f4f4f4">
                     {{ element.name }}
                   </div>
-                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text"
-                    v-model="element.name">
+                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text" v-model="changeName">
                 </q-card-section>
 
                 <q-separator />
@@ -144,9 +143,116 @@
                     </q-btn>
                   </div>
                   <q-btn @click="toggleStatus(element.id)">
-                    <input type="checkbox" id="status" name="status" v-model="element.status">
+                    <input type="checkbox" id="status" name="status" v-model="falseCheck">
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                      <strong>{{ element.status == true ? 'Not yet' : 'Done' }}</strong>
+                      <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
+                    </q-tooltip>Done
+                  </q-btn>
+
+                </q-card-actions>
+              </q-card>
+            </div>
+          </template>
+        </draggable>
+      </div>
+
+      <div class="container-doing"
+        style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
+        <p>Doing List</p>
+        <draggable class="todo-doing" item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info == 2)"
+          :group="{ name: 'people', pull: true, put: true }">
+          <template #item="{ element }">
+            <div style="margin-bottom: 10px;" :class="'random' + element.id">
+              <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
+                <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
+                  <div class="row items-center no-wrap">
+                    <div class="col">
+                      <div class="text-subtitle2">
+                        <p>Deadline Task : {{ element.deadline }}</p>
+                      </div>
+                    </div>
+
+                    <div class="col-auto">
+                      <q-btn color="grey-7" round flat icon="more_vert">
+                        <q-menu cover>
+                          <q-list>
+                            <q-item clickable @click="deleteList(element.id)">
+                              <q-item-section>Remove Card</q-item-section>
+                            </q-item>
+                            <q-dialog v-if="element.id === indexToDelete && confirm" v-model="confirm" persistent>
+                              <q-card>
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" v-close-popup aria-label="Close">
+                                      <span aria-hidden="true">×</span></button>
+                                    <h6 class="modal-title">Remove Card</h6>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p>Are you sure do you want to remove this item?</p>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button style="background: crimson;margin-right: 5px; cursor:pointer;" type="submit"
+                                      name="submit" @click="deleted(element.id)" class="btn btn-success">Remove</button>
+                                    <button style="background: azure;cursor:pointer;" type="button"
+                                      class="btn btn-default btn-close" v-close-popup>Cancel</button>
+                                  </div>
+                                </div>
+                              </q-card>
+                            </q-dialog>
+                            <q-item clickable @click="setDate(element.id)">
+                              <q-item-section>Set Deadline</q-item-section>
+                            </q-item>
+                            <q-dialog v-if="element.id === indexToSetDate && deadline" v-model="deadline">
+                              <div class="q-pa-md" style="text-align: center; max-width:350px; padding: 10px;">
+                                <div class="q-gutter-sm" style="margin-bottom: 5px;">
+                                  <q-badge color="teal" style="padding: 10px;">
+                                    Deadline: {{ element.deadline }}
+                                  </q-badge>
+                                </div>
+                                <div class="q-gutter-md row items-start">
+                                  <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm"
+                                    color="purple" />
+                                  <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
+                                </div>
+                                <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
+                                  @click="saveDate(element.id)">Save
+                                  Date</button>
+                                <button style="padding: 5px; margin-top: 5px;" class="btn btn-default"
+                                  v-close-popup>Cancel</button>
+                              </div>
+                            </q-dialog>
+                          </q-list>
+                        </q-menu>
+                      </q-btn>
+                    </div>
+                  </div>
+                </q-card-section>
+
+                <q-card-section>
+                  <div v-if="element.edited == false" style="color: #f4f4f4">
+                    {{ element.name }}
+                  </div>
+                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text" v-model="changeName">
+                </q-card-section>
+
+                <q-separator />
+
+                <q-card-actions style="display: flex; justify-content: space-between;">
+                  <div class="save-edit">
+                    <q-btn flat @click="startEdit(element.id)"><i class="fas fa-edit"></i>
+                      <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                        <strong>Edit</strong>
+                      </q-tooltip></q-btn>
+                    <q-btn flat @click="saveEdit(element.id)"><i class="fas fa-check"></i>
+                      <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                        <strong>Save</strong>
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                  <q-btn @click="toggleStatus(element.id)">
+                    <input type="checkbox" id="status" name="status" v-model="falseCheck">
+                    <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                      <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
                     </q-tooltip>Done
                   </q-btn>
 
@@ -160,7 +266,7 @@
       <div class="container-done"
         style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
         <p>Done</p>
-        <draggable item-key="id" @end="saveOrder" :list="todo_list.filter((x) => x.status == true)"
+        <draggable item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info == 3)"
           :group="{ name: 'people1', pull: true, put: true }" class="todo-done">
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
@@ -233,8 +339,7 @@
                   <div v-if="element.edited == false" style="color: #f4f4f4">
                     {{ element.name }}
                   </div>
-                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text"
-                    v-model="element.name">
+                  <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text" v-model="changeName">
                 </q-card-section>
 
                 <q-separator />
@@ -252,9 +357,9 @@
                     </q-btn>
                   </div>
                   <q-btn @click="toggleStatus(element.id)">
-                    <input type="checkbox" id="status" name="status" v-model="element.status">
+                    <input type="checkbox" id="status" name="status" v-model="trueCheck">
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-                      <strong>{{ element.status == true ? 'Not yet' : 'Done' }}</strong>
+                      <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
                     </q-tooltip>Done
                   </q-btn>
                 </q-card-actions>
@@ -270,7 +375,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import dayjs from 'dayjs';
-import { Todo, ContainerType } from './models';
+import { Todo, ContainerType, ExtendedTodo } from './models';
 import { useTodoStore } from 'src/stores/store';
 import draggable from 'vuedraggable';
 
@@ -285,14 +390,18 @@ export default defineComponent({
     const id = Date.now();
 
     const todoStore = useTodoStore();
+    const getExtended = useTodoStore();
 
     return {
       dense: ref(false),
       teal: ref(true),
       id,
       todoStore,
+      getExtended,
       todo_list: ref<Array<Todo>>([]),
+      todos: ref<Array<ExtendedTodo>>([]),
       todo_input: ref(''),
+      changeName: '',
       confirm: ref(false),
       firstDeadline: ref(false),
       deadline: ref(false),
@@ -303,11 +412,15 @@ export default defineComponent({
       today_deadline,
       task_date: ref(''),
       modalDateError: ref(false),
+      trueCheck: ref(true),
+      falseCheck: ref(false),
     }
   },
   mounted() {
     this.todoStore.getFromLocalStorage();
     this.todo_list = this.todoStore.todoList;
+    this.getExtended.getExtendedTodo();
+    this.todos = this.getExtended.ExtendedTodo;
   },
   methods: {
     addList() {
@@ -318,11 +431,11 @@ export default defineComponent({
         this.todo_list.push({
           id: this.id,
           name: this.todo_input,
-          status: false,
-          edited: false,
           deadline: this.task_date,
-          info: ''
+          info: 1
         });
+        this.getExtended.getExtendedTodo();
+        this.todos = this.getExtended.ExtendedTodo;
         this.task_date = '';
         this.id++;
         this.todoStore.saveToLocalStorage(this.todo_list);
@@ -342,37 +455,67 @@ export default defineComponent({
       return selectedDate >= currentDate;
     },
     toggleStatus(id: number) {
-      const item = this.todo_list.find(item => item.id === id);
-      if (item) {
-        item.status = !item.status;
-      }
+      const items = this.todo_list.find(item => item.id === id);
+      if (items) {
+        this.getExtended.getExtendedTodo();
+        this.todos = this.getExtended.ExtendedTodo;
+        const item = this.todos.find(item => item.id === id);
+        if (item) {
+          if (item) {
+            if (item.info == 3) {
+              item.info = 2;
+            } else {
+              item.info = 3;
+            }
+          }
+          items.info = item.info;
+        }
+      };
       this.todoStore.saveToLocalStorage(this.todo_list);
     },
     deleteList(id: number) {
       this.indexToDelete = id;
-      const item = this.todo_list.find(item => item.id === id);
+      this.getExtended.getExtendedTodo();
+      this.todos = this.getExtended.ExtendedTodo;
+      const item = this.todos.find(item => item.id === id);
       if (item) {
         this.confirm = true;
       }
     },
     deleted(id: number) {
-      const index = this.todo_list.findIndex(item => item.id === id);
-      if (index !== -1) {
-        this.todo_list.splice(index, 1);
-      }
+      const items = this.todo_list.find(item => item.id === id);
+      if (items) {
+        this.getExtended.getExtendedTodo();
+        this.todos = this.getExtended.ExtendedTodo;
+        const index = this.todos.findIndex(item => item.id === id);
+        if (index !== -1) {
+          this.todos.splice(index, 1);
+          this.todo_list.splice(index, 1);
+        }
+      };
       this.todoStore.saveToLocalStorage(this.todo_list);
     },
     startEdit(id: number) {
-      const item = this.todo_list.find(item => item.id === id);
+      this.getExtended.getExtendedTodo();
+      this.todos = this.getExtended.ExtendedTodo;
+      const item = this.todos.find(item => item.id === id);
       if (item) {
+        this.changeName = item.name;
         item.edited = true;
       }
     },
     saveEdit(id: number) {
-      const item = this.todo_list.find(item => item.id === id);
-      if (item) {
-        item.edited = false;
-      }
+      const items = this.todo_list.find(item => item.id === id);
+      if (items) {
+        this.getExtended.getExtendedTodo();
+        this.todos = this.getExtended.ExtendedTodo;
+        const item = this.todos.find(item => item.id === id);
+        if (item) {
+          item.edited = false;
+          item.name = this.changeName;
+          items.name = item.name;
+        }
+      };
       this.todoStore.saveToLocalStorage(this.todo_list);
     },
     firstDate() {
@@ -380,21 +523,33 @@ export default defineComponent({
     },
     setDate(id: number) {
       this.indexToSetDate = id;
-      const item = this.todo_list.find(item => item.id === id);
-      if (item) {
+      const items = this.todo_list.find(item => item.id === id);
+      if (items) {
         this.deadline = true;
-        this.task_date = item.deadline ? item.deadline : this.today_deadline;
-      }
-      this.todoStore.saveToLocalStorage(this.todo_list);
+        this.getExtended.getExtendedTodo();
+        this.todos = this.getExtended.ExtendedTodo;
+        const item = this.todos.find(item => item.id === id);
+        if (item) {
+          this.task_date = item.deadline ? item.deadline : this.today_deadline;
+        }
+        this.task_date = '';
+      };
     },
     saveFirstDate() {
       this.firstDeadline = false;
     },
     saveDate(id: number) {
       id = this.indexToSetDate;
-      const item = this.todo_list.find(item => item.id === id);
-      if (item) {
-        item.deadline = this.task_date;
+      const items = this.todo_list.find(item => item.id === id);
+      if (items) {
+        this.deadline = true;
+        this.getExtended.getExtendedTodo();
+        this.todos = this.getExtended.ExtendedTodo;
+        const item = this.todos.find(item => item.id === id);
+        if (item) {
+          item.deadline = this.task_date;
+          items.deadline = item.deadline;
+        }
       };
       this.todoStore.saveToLocalStorage(this.todo_list);
       this.deadline = false;
@@ -407,22 +562,32 @@ export default defineComponent({
         let item_id = parseInt(itemValue.classList.value.split('random')[1]);
         let temp = this.todo_list[this.todo_list.findIndex((x) => x.id == item_id)];
         if (container.to.classList.value.includes('todo-done')) {
-          temp.status = true;
+          temp.info = 3;
           this.todo_list.sort((a, b) => {
-            return a.status === b.status ? 0 : a.status ? -1 : 1;
+            return a.info === b.info ? 0 : b.info - a.info;
           });
-          const itemToMove = this.todo_list[oldIndex];
-          this.todo_list.splice(oldIndex, 1);
-          this.todo_list.splice(newIndex, 0, itemToMove);
+        } else if (container.to.classList.value.includes('todo-doing')) {
+          temp.info = 2;
+          this.todo_list.sort((a, b) => {
+            if (a.info === b.info) {
+              return 0;
+            } else if (a.info === 2) {
+              return -1;
+            } else if (b.info === 2) {
+              return 1;
+            } else {
+              return b.info - a.info;
+            }
+          });
         } else {
-          temp.status = false;
+          temp.info = 1;
           this.todo_list.sort((a, b) => {
-            return b.status === a.status ? 0 : b.status ? -1 : 1;
+            return b.info === a.info ? 0 : a.info - b.info;
           });
-          const itemToMove = this.todo_list[oldIndex];
-          this.todo_list.splice(oldIndex, 1);
-          this.todo_list.splice(newIndex, 0, itemToMove);
         }
+        const itemToMove = this.todo_list[oldIndex];
+        this.todo_list.splice(oldIndex, 1);
+        this.todo_list.splice(newIndex, 0, itemToMove);
         this.todo_list[item_id] = temp;
         this.todoStore.saveToLocalStorage(this.todo_list);
       } catch (error) {

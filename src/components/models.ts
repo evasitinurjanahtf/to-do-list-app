@@ -1,10 +1,12 @@
 export interface Todo {
   id: number;
   name: string;
-  status: boolean;
-  edited: boolean;
   deadline: string;
-  info: string;
+  info: number;
+}
+
+export interface ExtendedTodo extends Todo {
+  edited: boolean;
 }
 
 export interface ContainerType {
@@ -12,5 +14,6 @@ export interface ContainerType {
   oldIndex: number;
   item: HTMLElement;
   to: HTMLElement;
+  from: HTMLElement;
   item_id: number;
 }
