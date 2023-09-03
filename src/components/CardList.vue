@@ -464,8 +464,38 @@ export default defineComponent({
           if (item) {
             if (item.info == 3) {
               item.info = 2;
+              items.info = 2;
+              this.todos.sort((a, b) => {
+                if (a.info === b.info) {
+                  return 0;
+                } else if (a.info === 2) {
+                  return -1;
+                } else if (b.info === 2) {
+                  return 1;
+                } else {
+                  return b.info - a.info;
+                }
+              });
+              this.todo_list.sort((a, b) => {
+                if (a.info === b.info) {
+                  return 0;
+                } else if (a.info === 2) {
+                  return -1;
+                } else if (b.info === 2) {
+                  return 1;
+                } else {
+                  return b.info - a.info;
+                }
+              });
             } else {
               item.info = 3;
+              items.info = 3;
+              this.todos.sort((a, b) => {
+                return a.info === b.info ? 0 : b.info - a.info;
+              });
+              this.todo_list.sort((a, b) => {
+                return a.info === b.info ? 0 : b.info - a.info;
+              });
             }
           }
           items.info = item.info;
@@ -555,19 +585,42 @@ export default defineComponent({
       this.deadline = false;
     },
     saveOrder(container: ContainerType) {
+      console.log(container.from.classList.value, 'ini from containernya')
+      this.getExtended.getExtendedTodo();
+      this.todos = this.getExtended.ExtendedTodo;
       try {
         const newIndex = container.newIndex;
         const oldIndex = container.oldIndex;
         const itemValue = container.item;
         let item_id = parseInt(itemValue.classList.value.split('random')[1]);
-        let temp = this.todo_list[this.todo_list.findIndex((x) => x.id == item_id)];
+        let temp = this.todos[this.todos.findIndex((x) => x.id == item_id)];
+        let valueTodo = this.todo_list[this.todo_list.findIndex((x) => x.id == item_id)];
+        if (valueTodo) {
+          console.log(valueTodo.info, 'ini dari local')
+        }
         if (container.to.classList.value.includes('todo-done')) {
           temp.info = 3;
+          valueTodo.info = 3;
+          this.todos.sort((a, b) => {
+            return a.info === b.info ? 0 : b.info - a.info;
+          });
           this.todo_list.sort((a, b) => {
             return a.info === b.info ? 0 : b.info - a.info;
           });
         } else if (container.to.classList.value.includes('todo-doing')) {
           temp.info = 2;
+          valueTodo.info = 2;
+          this.todos.sort((a, b) => {
+            if (a.info === b.info) {
+              return 0;
+            } else if (a.info === 2) {
+              return -1;
+            } else if (b.info === 2) {
+              return 1;
+            } else {
+              return b.info - a.info;
+            }
+          });
           this.todo_list.sort((a, b) => {
             if (a.info === b.info) {
               return 0;
@@ -581,14 +634,22 @@ export default defineComponent({
           });
         } else {
           temp.info = 1;
+          valueTodo.info = 1;
+          this.todos.sort((a, b) => {
+            return b.info === a.info ? 0 : a.info - b.info;
+          });
           this.todo_list.sort((a, b) => {
             return b.info === a.info ? 0 : a.info - b.info;
           });
         }
-        const itemToMove = this.todo_list[oldIndex];
+        const itemToMove = this.todos[oldIndex];
+        const itemToMove1 = this.todo_list[oldIndex];
+        this.todos.splice(oldIndex, 1);
         this.todo_list.splice(oldIndex, 1);
-        this.todo_list.splice(newIndex, 0, itemToMove);
-        this.todo_list[item_id] = temp;
+        this.todos.splice(newIndex, 0, itemToMove);
+        this.todo_list.splice(newIndex, 0, itemToMove1);
+        this.todos[item_id] = temp;
+        this.todo_list[item_id] = valueTodo;
         this.todoStore.saveToLocalStorage(this.todo_list);
       } catch (error) {
         console.log(error);
