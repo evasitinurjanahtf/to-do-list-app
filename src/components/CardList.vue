@@ -49,6 +49,12 @@
       </q-card>
     </q-dialog>
     {{ todo_list }}
+    <div class="row q-pa-lg">
+      <label for="cars">Select Filter Status</label>
+      <select @change="filtered">
+        <option v-for="item of filteredOptions" :key="item.id" :value="item.label">{{ item.label }}</option>
+      </select>
+    </div>
     <div class="container">
       <div class="container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
         <p>Task list</p>
@@ -372,7 +378,7 @@
       <div class="container-all"
         style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
         <p>All Data</p>
-        <template v-for="element of todos" :key="element.id">
+        <template v-for="element of valueFilter" :key="element.id">
           <div style="margin-bottom: 10px;">
             <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
               <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
@@ -516,12 +522,21 @@ export default defineComponent({
       today_deadline,
       task_date: ref(''),
       modalDateError: ref(false),
+      valueFilter: ref<Array<ExtendedTodo>>([]),
+      filteredOptions: [
+        { id: 1, label: 'All' },
+        { id: 2, label: 'Task List' },
+        { id: 3, label: 'Doing List' },
+        { id: 4, label: 'Done List' }
+
+      ]
     }
   },
   mounted() {
     this.todoStore.getTodoList();
     this.todo_list = this.todoStore.todoList;
     this.getExtendedTodo();
+    this.valueFilter = this.todos;
   },
 
   methods: {
@@ -743,6 +758,22 @@ export default defineComponent({
         console.log(error);
       }
     },
+    filtered(event: MouseEvent) {
+      this.getExtendedTodo();
+      const selectElement = event.target as HTMLSelectElement;
+      const selectedStatus = selectElement.value;
+      console.log(selectedStatus, 'cobaa')
+      if (selectedStatus == 'All') {
+        this.valueFilter = this.todos;
+      } else if (selectedStatus == 'Task List') {
+        this.valueFilter = this.todos.filter((x) => x.info == 1);
+      } else if (selectedStatus == 'Doing List') {
+        this.valueFilter = this.todos.filter((x) => x.info == 2);
+      } else {
+        this.valueFilter = this.todos.filter((x) => x.info == 3);
+      }
+
+    }
   }
 })
 </script>
