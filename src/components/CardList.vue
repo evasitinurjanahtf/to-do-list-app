@@ -417,10 +417,9 @@ export default defineComponent({
     }
   },
   mounted() {
-    this.todoStore.getFromLocalStorage();
+    this.todoStore.getTodoList();
     this.todo_list = this.todoStore.todoList;
-    this.getExtended.getExtendedTodo();
-    this.todos = this.getExtended.ExtendedTodo;
+    this.getExtendedTodo();
   },
   methods: {
     addList() {
@@ -434,16 +433,20 @@ export default defineComponent({
           deadline: this.task_date,
           info: 1
         });
-        this.getExtended.getExtendedTodo();
-        this.todos = this.getExtended.ExtendedTodo;
+        this.getExtendedTodo();
         this.task_date = '';
         this.id++;
-        this.todoStore.saveToLocalStorage(this.todo_list);
+        this.todoStore.saveTodoList(this.todo_list);
         this.todo_input = '';
       }
       else {
         console.log('Empty input detected');
       }
+    },
+    getExtendedTodo() {
+      this.todos = this.todo_list.map((todo: Todo) => {
+        return { ...todo, edited: false };
+      });
     },
     closeModalError() {
       this.modalDateError = false;
@@ -457,8 +460,7 @@ export default defineComponent({
     toggleStatus(id: number) {
       const items = this.todo_list.find(item => item.id === id);
       if (items) {
-        this.getExtended.getExtendedTodo();
-        this.todos = this.getExtended.ExtendedTodo;
+        this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
           if (item) {
@@ -501,12 +503,11 @@ export default defineComponent({
           items.info = item.info;
         }
       };
-      this.todoStore.saveToLocalStorage(this.todo_list);
+      this.todoStore.saveTodoList(this.todo_list);
     },
     deleteList(id: number) {
       this.indexToDelete = id;
-      this.getExtended.getExtendedTodo();
-      this.todos = this.getExtended.ExtendedTodo;
+      this.getExtendedTodo();
       const item = this.todos.find(item => item.id === id);
       if (item) {
         this.confirm = true;
@@ -515,19 +516,17 @@ export default defineComponent({
     deleted(id: number) {
       const items = this.todo_list.find(item => item.id === id);
       if (items) {
-        this.getExtended.getExtendedTodo();
-        this.todos = this.getExtended.ExtendedTodo;
+        this.getExtendedTodo();
         const index = this.todos.findIndex(item => item.id === id);
         if (index !== -1) {
           this.todos.splice(index, 1);
           this.todo_list.splice(index, 1);
         }
       };
-      this.todoStore.saveToLocalStorage(this.todo_list);
+      this.todoStore.saveTodoList(this.todo_list);
     },
     startEdit(id: number) {
-      this.getExtended.getExtendedTodo();
-      this.todos = this.getExtended.ExtendedTodo;
+      this.getExtendedTodo();
       const item = this.todos.find(item => item.id === id);
       if (item) {
         this.changeName = item.name;
@@ -537,8 +536,7 @@ export default defineComponent({
     saveEdit(id: number) {
       const items = this.todo_list.find(item => item.id === id);
       if (items) {
-        this.getExtended.getExtendedTodo();
-        this.todos = this.getExtended.ExtendedTodo;
+        this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
           item.edited = false;
@@ -546,7 +544,7 @@ export default defineComponent({
           items.name = item.name;
         }
       };
-      this.todoStore.saveToLocalStorage(this.todo_list);
+      this.todoStore.saveTodoList(this.todo_list);
     },
     firstDate() {
       this.firstDeadline = true;
@@ -556,8 +554,7 @@ export default defineComponent({
       const items = this.todo_list.find(item => item.id === id);
       if (items) {
         this.deadline = true;
-        this.getExtended.getExtendedTodo();
-        this.todos = this.getExtended.ExtendedTodo;
+        this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
           this.task_date = item.deadline ? item.deadline : this.today_deadline;
@@ -573,21 +570,18 @@ export default defineComponent({
       const items = this.todo_list.find(item => item.id === id);
       if (items) {
         this.deadline = true;
-        this.getExtended.getExtendedTodo();
-        this.todos = this.getExtended.ExtendedTodo;
+        this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
           item.deadline = this.task_date;
           items.deadline = item.deadline;
         }
       };
-      this.todoStore.saveToLocalStorage(this.todo_list);
+      this.todoStore.saveTodoList(this.todo_list);
       this.deadline = false;
     },
     saveOrder(container: ContainerType) {
-      console.log(container.from.classList.value, 'ini from containernya')
-      this.getExtended.getExtendedTodo();
-      this.todos = this.getExtended.ExtendedTodo;
+      this.getExtendedTodo();
       try {
         const newIndex = container.newIndex;
         const oldIndex = container.oldIndex;
@@ -650,7 +644,7 @@ export default defineComponent({
         this.todo_list.splice(newIndex, 0, itemToMove1);
         this.todos[item_id] = temp;
         this.todo_list[item_id] = valueTodo;
-        this.todoStore.saveToLocalStorage(this.todo_list);
+        this.todoStore.saveTodoList(this.todo_list);
       } catch (error) {
         console.log(error);
       }
