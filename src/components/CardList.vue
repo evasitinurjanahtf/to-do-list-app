@@ -390,14 +390,12 @@ export default defineComponent({
     const id = Date.now();
 
     const todoStore = useTodoStore();
-    const getExtended = useTodoStore();
 
     return {
       dense: ref(false),
       teal: ref(true),
       id,
       todoStore,
-      getExtended,
       todo_list: ref<Array<Todo>>([]),
       todos: ref<Array<ExtendedTodo>>([]),
       todo_input: ref(''),
