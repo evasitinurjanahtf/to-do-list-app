@@ -143,7 +143,7 @@
                     </q-btn>
                   </div>
                   <q-btn @click="toggleStatus(element.id)">
-                    <input type="checkbox" id="status" name="status" v-model="falseCheck">
+                    <input type="checkbox" id="status" name="status" :checked="element.info === 3">
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                       <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
                     </q-tooltip>Done
@@ -250,7 +250,7 @@
                     </q-btn>
                   </div>
                   <q-btn @click="toggleStatus(element.id)">
-                    <input type="checkbox" id="status" name="status" v-model="falseCheck">
+                    <input type="checkbox" id="status" name="status" :checked="element.info === 3">
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                       <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
                     </q-tooltip>Done
@@ -357,7 +357,7 @@
                     </q-btn>
                   </div>
                   <q-btn @click="toggleStatus(element.id)">
-                    <input type="checkbox" id="status" name="status" v-model="trueCheck">
+                    <input type="checkbox" id="status" name="status" :checked="element.info === 3">
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                       <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
                     </q-tooltip>Done
@@ -367,6 +367,112 @@
             </div>
           </template>
         </draggable>
+      </div>
+
+      <div class="container-all"
+        style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
+        <p>All Data</p>
+        <template v-for="element of todos" :key="element.id">
+          <div style="margin-bottom: 10px;">
+            <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
+              <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
+                <div class="row items-center no-wrap">
+                  <div class="col">
+                    <div class="text-subtitle2">
+                      <p>Deadline Task : {{ element.deadline }}</p>
+                    </div>
+                  </div>
+
+                  <div class="col-auto">
+                    <q-btn color="grey-7" round flat icon="more_vert">
+                      <q-menu cover>
+                        <q-list>
+                          <q-item clickable @click="deleteList(element.id)">
+                            <q-item-section>Remove Card</q-item-section>
+                          </q-item>
+                          <q-dialog v-if="element.id === indexToDelete && confirm" v-model="confirm" persistent>
+                            <q-card>
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" v-close-popup aria-label="Close">
+                                    <span aria-hidden="true">×</span></button>
+                                  <h6 class="modal-title">Remove Card</h6>
+                                </div>
+                                <div class="modal-body">
+                                  <p>Are you sure do you want to remove this item?</p>
+                                </div>
+                                <div class="modal-footer">
+                                  <button style="background: crimson;margin-right: 5px; cursor:pointer;" type="submit"
+                                    name="submit" @click="deleted(element.id)" class="btn btn-success">Remove</button>
+                                  <button style="background: azure;cursor:pointer;" type="button"
+                                    class="btn btn-default btn-close" v-close-popup>Cancel</button>
+                                </div>
+                              </div>
+                            </q-card>
+                          </q-dialog>
+                          <q-item clickable @click="setDate(element.id)">
+                            <q-item-section>Set Deadline</q-item-section>
+                          </q-item>
+                          <q-dialog v-if="element.id === indexToSetDate && deadline" v-model="deadline">
+                            <div class="q-pa-md" style="text-align: center; max-width:350px;">
+                              <div class="q-gutter-sm" style="margin-bottom: 5px;">
+                                <q-badge color="teal" style="padding: 10px;">
+                                  Deadline: {{ element.deadline }}
+                                </q-badge>
+                              </div>
+                              <div class="q-gutter-md row items-start">
+                                <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm"
+                                  color="purple" />
+                                <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
+                              </div>
+                              <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
+                                @click="saveDate(element.id)">Save
+                                Date</button>
+                              <button style="padding: 5px; margin-top: 5px;" class="btn btn-default"
+                                v-close-popup>Cancel</button>
+                            </div>
+                          </q-dialog>
+                        </q-list>
+                      </q-menu>
+                    </q-btn>
+                  </div>
+                </div>
+              </q-card-section>
+
+              <q-card-section>
+                <div v-if="element.edited == false" style="color: #f4f4f4">
+                  {{ element.name }}
+                </div>
+                <input v-if="element.edited == true" type="text" class="text-subtitle2 edit-text" v-model="changeName">
+              </q-card-section>
+
+              <q-separator />
+
+              <q-card-actions style="display: flex; justify-content: space-between;">
+                <div class="save-edit">
+                  <q-btn flat @click="startEdit(element.id)"><i class="fas fa-edit"></i>
+                    <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                      <strong>Edit</strong>
+                    </q-tooltip></q-btn>
+                  <q-btn flat @click="saveEdit(element.id)"><i class="fas fa-check"></i>
+                    <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                      <strong>Save</strong>
+                    </q-tooltip>
+                  </q-btn>
+                </div>
+                <div
+                  style="padding: 7px;border-radius: 2px;box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12);display: flex;align-items: center;">
+                  <input @click="toggleStatus(element.id)" style="margin-right:5px;" type="checkbox"
+                    :checked="element.info === 3" :id="'status_' + element.id" name="status">
+                  <label :for="'status_' + element.id">Done</label>
+                  <q-tooltip :for="'status_' + element.id" anchor="top middle" self="bottom middle" :offset="[10, 10]">
+                    <strong>{{ element.info === 3 ? 'Not yet' : 'Done' }}</strong>
+                  </q-tooltip>
+                </div>
+              </q-card-actions>
+            </q-card>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -410,8 +516,6 @@ export default defineComponent({
       today_deadline,
       task_date: ref(''),
       modalDateError: ref(false),
-      trueCheck: ref(true),
-      falseCheck: ref(false),
     }
   },
   mounted() {
@@ -419,6 +523,7 @@ export default defineComponent({
     this.todo_list = this.todoStore.todoList;
     this.getExtendedTodo();
   },
+
   methods: {
     addList() {
       const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
@@ -461,42 +566,40 @@ export default defineComponent({
         this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
-          if (item) {
-            if (item.info == 3) {
-              item.info = 2;
-              items.info = 2;
-              this.todos.sort((a, b) => {
-                if (a.info === b.info) {
-                  return 0;
-                } else if (a.info === 2) {
-                  return -1;
-                } else if (b.info === 2) {
-                  return 1;
-                } else {
-                  return b.info - a.info;
-                }
-              });
-              this.todo_list.sort((a, b) => {
-                if (a.info === b.info) {
-                  return 0;
-                } else if (a.info === 2) {
-                  return -1;
-                } else if (b.info === 2) {
-                  return 1;
-                } else {
-                  return b.info - a.info;
-                }
-              });
-            } else {
-              item.info = 3;
-              items.info = 3;
-              this.todos.sort((a, b) => {
-                return a.info === b.info ? 0 : b.info - a.info;
-              });
-              this.todo_list.sort((a, b) => {
-                return a.info === b.info ? 0 : b.info - a.info;
-              });
-            }
+          if (item.info == 3) {
+            item.info = 2;
+            items.info = 2;
+            this.todos.sort((a, b) => {
+              if (a.info === b.info) {
+                return 0;
+              } else if (a.info === 2) {
+                return -1;
+              } else if (b.info === 2) {
+                return 1;
+              } else {
+                return b.info - a.info;
+              }
+            });
+            this.todo_list.sort((a, b) => {
+              if (a.info === b.info) {
+                return 0;
+              } else if (a.info === 2) {
+                return -1;
+              } else if (b.info === 2) {
+                return 1;
+              } else {
+                return b.info - a.info;
+              }
+            });
+          } else {
+            item.info = 3;
+            items.info = 3;
+            this.todos.sort((a, b) => {
+              return a.info === b.info ? 0 : b.info - a.info;
+            });
+            this.todo_list.sort((a, b) => {
+              return a.info === b.info ? 0 : b.info - a.info;
+            });
           }
           items.info = item.info;
         }
