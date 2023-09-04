@@ -539,7 +539,7 @@ export default defineComponent({
         this.getExtendedTodo();
         this.task_date = '';
         this.id++;
-        this.todoStore.saveTodoList(this.todo_list);
+
         this.todo_input = '';
       }
       else {
@@ -604,7 +604,6 @@ export default defineComponent({
           items.info = item.info;
         }
       };
-      this.todoStore.saveTodoList(this.todo_list);
     },
     deleteList(id: number) {
       this.indexToDelete = id;
@@ -624,7 +623,6 @@ export default defineComponent({
           this.todo_list.splice(index, 1);
         }
       };
-      this.todoStore.saveTodoList(this.todo_list);
     },
     startEdit(id: number) {
       this.getExtendedTodo();
@@ -645,7 +643,6 @@ export default defineComponent({
           items.name = item.name;
         }
       };
-      this.todoStore.saveTodoList(this.todo_list);
     },
     firstDate() {
       this.firstDeadline = true;
@@ -678,7 +675,6 @@ export default defineComponent({
           items.deadline = item.deadline;
         }
       };
-      this.todoStore.saveTodoList(this.todo_list);
       this.deadline = false;
     },
     saveOrder(container: ContainerType) {
@@ -690,9 +686,6 @@ export default defineComponent({
         let item_id = parseInt(itemValue.classList.value.split('random')[1]);
         let temp = this.todos[this.todos.findIndex((x) => x.id == item_id)];
         let valueTodo = this.todo_list[this.todo_list.findIndex((x) => x.id == item_id)];
-        if (valueTodo) {
-          console.log(valueTodo.info, 'ini dari local')
-        }
         if (container.to.classList.value.includes('todo-done')) {
           temp.info = 3;
           valueTodo.info = 3;
@@ -745,7 +738,7 @@ export default defineComponent({
         this.todo_list.splice(newIndex, 0, itemToMove1);
         this.todos[item_id] = temp;
         this.todo_list[item_id] = valueTodo;
-        this.todoStore.saveTodoList(this.todo_list);
+
       } catch (error) {
         console.log(error);
       }
