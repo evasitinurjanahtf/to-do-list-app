@@ -21,7 +21,7 @@
             </q-badge>
           </div>
           <div class="q-gutter-md row items-start">
-            <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm" color="purple" />
+            <q-date v-model="task_date" mask="YYYY-MM-DD HH:mm" color="purple" />
             <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
           </div>
           <button style="padding: 5px; margin-top: 5px;" class="btn btn-success" @click="saveFirstDate">Save
@@ -48,21 +48,21 @@
         </div>
       </q-card>
     </q-dialog>
-    {{ todo_list }}
     <div class="row q-pa-lg">
-      <label for="cars">Select Filter Status</label>
+      <label style="margin-right: 5px;" for="status">Select Filter Status</label>
       <select @change="filtered">
         <option v-for="item of filteredOptions" :key="item.id" :value="item.label">{{ item.label }}</option>
       </select>
     </div>
     <div class="container">
-      <div class="container-list" style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px;">
+      <div class="container-list">
         <p>Task list</p>
-        <draggable class="todo-start" item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info == 1)"
+        <draggable class="todo-start" item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info === 1)"
           :group="{ name: 'people', pull: true, put: true }">
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
-              <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
+              <q-card flat bordered class="my-card text-white list-group-item item"
+                :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
@@ -109,8 +109,7 @@
                                   </q-badge>
                                 </div>
                                 <div class="q-gutter-md row items-start">
-                                  <q-date :options="dateOptions" v-model="task_date" mask="YYYY-MM-DD HH:mm"
-                                    color="purple" />
+                                  <q-date v-model="task_date" mask="YYYY-MM-DD HH:mm" color="purple" />
                                   <q-time v-model="task_date" color="purple" mask="YYYY-MM-DD HH:mm" />
                                 </div>
                                 <button style="padding: 5px; margin-top: 5px;" class="btn btn-success"
@@ -162,14 +161,14 @@
         </draggable>
       </div>
 
-      <div class="container-doing"
-        style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
+      <div class="container-doing">
         <p>Doing List</p>
         <draggable class="todo-doing" item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info == 2)"
           :group="{ name: 'people', pull: true, put: true }">
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
-              <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
+              <q-card flat bordered class="my-card text-white list-group-item item"
+                :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
@@ -269,14 +268,14 @@
         </draggable>
       </div>
 
-      <div class="container-done"
-        style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
+      <div class="container-done">
         <p>Done</p>
         <draggable item-key="id" @end="saveOrder" :list="todos.filter((x) => x.info == 3)"
           :group="{ name: 'people1', pull: true, put: true }" class="todo-done">
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
-              <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
+              <q-card flat bordered class="my-card text-white list-group-item item"
+                :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
@@ -375,12 +374,12 @@
         </draggable>
       </div>
 
-      <div class="container-all"
-        style="border: 1px solid rgba(0, 0, 0, 0.24); width: 250px; padding: 10px; margin-left:10px">
-        <p>All Data</p>
-        <template v-for="element of valueFilter" :key="element.id">
+      <div class="container-all">
+        <p>All Data => {{ forText }}</p>
+        <template v-for="element of valueFilter" :key="element.deadline">
           <div style="margin-bottom: 10px;">
-            <q-card flat bordered class="my-card bg-secondary text-white list-group-item item">
+            <q-card flat bordered class="my-card text-white list-group-item item"
+              :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
               <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                 <div class="row items-center no-wrap">
                   <div class="col">
@@ -497,13 +496,13 @@ export default defineComponent({
     draggable
   },
   data() {
-    const timestamp = new Date().getTime();
-    const today_deadline = dayjs.unix(timestamp / 1000).add(1, 'hour').locale('id').format('YYYY-MM-DD HH:mm');
     const id = Date.now();
-
     const todoStore = useTodoStore();
+    const dayJS = dayjs;
+
 
     return {
+      dayJS,
       dense: ref(false),
       teal: ref(true),
       id,
@@ -519,7 +518,6 @@ export default defineComponent({
       indexToDelete: 0,
       indexToSetDate: 0,
       indexToEdit: 0,
-      today_deadline,
       task_date: ref(''),
       modalDateError: ref(false),
       valueFilter: ref<Array<ExtendedTodo>>([]),
@@ -528,17 +526,17 @@ export default defineComponent({
         { id: 2, label: 'Task List' },
         { id: 3, label: 'Doing List' },
         { id: 4, label: 'Done List' }
-
-      ]
+      ],
+      forText: ref('All'),
     }
   },
   mounted() {
     this.todoStore.getTodoList();
     this.todo_list = this.todoStore.todoList;
-    this.getExtendedTodo();
-    this.valueFilter = this.todos;
-  },
 
+    this.getExtendedTodo();
+    this.getAllData();
+  },
   methods: {
     addList() {
       const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
@@ -552,18 +550,66 @@ export default defineComponent({
           info: 1
         });
         this.getExtendedTodo();
+        this.getAllData();
         this.task_date = '';
         this.id++;
-
         this.todo_input = '';
       }
       else {
         console.log('Empty input detected');
       }
     },
+    changeColorDate(date: string) {
+      const dayNow = dayjs().hour(0).minute(0).second(0).unix();
+      let myday = dayjs(date).hour(0).minute(0).second(0).unix();
+
+      let mydayStamp = dayjs(date).unix();
+      const tomorrowStamp1 = dayjs().add(2, 'day').unix();
+
+      if (myday >= dayNow && mydayStamp < tomorrowStamp1) {
+        return 2;
+      } else if (myday < dayNow && mydayStamp < tomorrowStamp1) {
+        return 1;
+      } else {
+        return 0;
+      }
+    },
     getExtendedTodo() {
       this.todos = this.todo_list.map((todo: Todo) => {
         return { ...todo, edited: false };
+      });
+    },
+    getAllData() {
+      this.valueFilter = this.todo_list.map((todo: Todo) => {
+        return { ...todo, edited: false };
+      });
+      this.valueFilter.sort((a, b) => {
+        const dayNow = dayjs().hour(0).minute(0).second(0).unix();
+        let dayNow1 = dayjs(a.deadline).hour(0).unix();
+        let dayNow2 = dayjs(b.deadline).hour(0).unix();
+        const timestamp1 = dayjs(a.deadline).unix();
+        const timestamp2 = dayjs(b.deadline).unix();
+
+        const nextday1 = dayjs().add(2, 'day').unix();
+        const nextdayHour = dayjs().add(2, 'day').hour(0).minute(0).second(0).unix();
+        if (dayNow1 === nextdayHour) {
+          dayNow1 = dayNow;
+        } else if (dayNow2 === nextdayHour) {
+          dayNow2 = dayNow;
+        }
+
+        if (timestamp1 < nextday1 && timestamp2 > nextday1) {
+          return -1
+        } else if (timestamp1 > nextday1 && timestamp2 < nextday1) {
+          return 1
+        } else if (timestamp1 >= dayNow && timestamp2 <= dayNow) {
+          return -1
+        } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
+          return 1
+        }
+        else {
+          return timestamp1 - timestamp2;
+        }
       });
     },
     closeModalError() {
@@ -584,41 +630,20 @@ export default defineComponent({
           if (item.info == 3) {
             item.info = 2;
             items.info = 2;
-            this.todos.sort((a, b) => {
-              if (a.info === b.info) {
-                return 0;
-              } else if (a.info === 2) {
-                return -1;
-              } else if (b.info === 2) {
-                return 1;
-              } else {
-                return b.info - a.info;
-              }
-            });
-            this.todo_list.sort((a, b) => {
-              if (a.info === b.info) {
-                return 0;
-              } else if (a.info === 2) {
-                return -1;
-              } else if (b.info === 2) {
-                return 1;
-              } else {
-                return b.info - a.info;
-              }
-            });
           } else {
             item.info = 3;
             items.info = 3;
-            this.todos.sort((a, b) => {
-              return a.info === b.info ? 0 : b.info - a.info;
-            });
-            this.todo_list.sort((a, b) => {
-              return a.info === b.info ? 0 : b.info - a.info;
-            });
           }
           items.info = item.info;
+          this.todos.sort((a, b) => {
+            return a.info === b.info ? 0 : a.info - b.info;
+          });
+          this.todo_list.sort((a, b) => {
+            return a.info === b.info ? 0 : a.info - b.info;
+          });
         }
       };
+      this.getAllData();
     },
     deleteList(id: number) {
       this.indexToDelete = id;
@@ -638,13 +663,20 @@ export default defineComponent({
           this.todo_list.splice(index, 1);
         }
       };
+      this.getAllData();
     },
     startEdit(id: number) {
       this.getExtendedTodo();
+      this.getAllData();
       const item = this.todos.find(item => item.id === id);
       if (item) {
         this.changeName = item.name;
         item.edited = true;
+      }
+      const items = this.valueFilter.find(items => items.id === id);
+      if (items) {
+        this.changeName = items.name;
+        items.edited = true;
       }
     },
     saveEdit(id: number) {
@@ -657,9 +689,17 @@ export default defineComponent({
           item.name = this.changeName;
           items.name = item.name;
         }
+        const value = this.valueFilter.find(value => value.id);
+        if (value) {
+          value.edited = false;
+          value.name = this.changeName;
+          items.name = value.name;
+        }
+        this.getAllData();
       };
     },
     firstDate() {
+      this.task_date = '';
       this.firstDeadline = true;
     },
     setDate(id: number) {
@@ -670,9 +710,13 @@ export default defineComponent({
         this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
-          this.task_date = item.deadline ? item.deadline : this.today_deadline;
+          this.task_date = item.deadline != '' ? item.deadline : '';
         }
-        this.task_date = '';
+        this.getAllData();
+        const value = this.valueFilter.find(value => value.id === id);
+        if (value) {
+          this.task_date = value.deadline != '' ? value.deadline : '';
+        }
       };
     },
     saveFirstDate() {
@@ -680,17 +724,29 @@ export default defineComponent({
     },
     saveDate(id: number) {
       id = this.indexToSetDate;
-      const items = this.todo_list.find(item => item.id === id);
-      if (items) {
-        this.deadline = true;
-        this.getExtendedTodo();
-        const item = this.todos.find(item => item.id === id);
-        if (item) {
-          item.deadline = this.task_date;
-          items.deadline = item.deadline;
-        }
-      };
-      this.deadline = false;
+      this.getExtendedTodo();
+      this.getAllData();
+      const existingDeadline = this.todos.find(data => data.deadline === this.task_date && this.task_date !== '');
+      if (existingDeadline) {
+        this.modalDateError = true;
+      } else {
+        const items = this.todo_list.find(item => item.id === id);
+        if (items) {
+          this.deadline = true;
+          const item = this.todos.find(item => item.id === id);
+          if (item) {
+            item.deadline = this.task_date;
+            items.deadline = item.deadline;
+          }
+          const value = this.valueFilter.find(value => value.id == id);
+          if (value) {
+            value.deadline = this.task_date;
+            items.deadline = value.deadline;
+          }
+        };
+        this.deadline = false;
+      }
+      this.getAllData();
     },
     saveOrder(container: ContainerType) {
       this.getExtendedTodo();
@@ -735,7 +791,7 @@ export default defineComponent({
               return b.info - a.info;
             }
           });
-        } else {
+        } else if (container.to.classList.value.includes('todo-start')) {
           temp.info = 1;
           valueTodo.info = 1;
           this.todos.sort((a, b) => {
@@ -751,28 +807,31 @@ export default defineComponent({
         this.todo_list.splice(oldIndex, 1);
         this.todos.splice(newIndex, 0, itemToMove);
         this.todo_list.splice(newIndex, 0, itemToMove1);
-        this.todos[item_id] = temp;
-        this.todo_list[item_id] = valueTodo;
-
+        this.getAllData();
       } catch (error) {
         console.log(error);
       }
     },
+    filters(info: number) {
+      this.valueFilter = this.todo_list
+        .map((todo: Todo) => {
+          return { ...todo, edited: false };
+        })
+        .filter((x) => x.info === info);
+    },
     filtered(event: MouseEvent) {
-      this.getExtendedTodo();
       const selectElement = event.target as HTMLSelectElement;
       const selectedStatus = selectElement.value;
-      console.log(selectedStatus, 'cobaa')
+      this.forText = selectedStatus;
       if (selectedStatus == 'All') {
-        this.valueFilter = this.todos;
+        this.getAllData();
       } else if (selectedStatus == 'Task List') {
-        this.valueFilter = this.todos.filter((x) => x.info == 1);
+        this.filters(1);
       } else if (selectedStatus == 'Doing List') {
-        this.valueFilter = this.todos.filter((x) => x.info == 2);
+        this.filters(2);
       } else {
-        this.valueFilter = this.todos.filter((x) => x.info == 3);
+        this.filters(3);
       }
-
     }
   }
 })
@@ -794,8 +853,17 @@ export default defineComponent({
 
 .container-list,
 .container-done,
-.container-doing {
-  padding: 20px;
+.container-doing,
+.container-all {
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  width: 250px;
+  padding: 10px;
+}
+
+.container-done,
+.container-doing,
+.container-all {
+  margin-left: 10px;
 }
 
 .my-card {
