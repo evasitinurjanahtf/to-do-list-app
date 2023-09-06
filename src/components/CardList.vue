@@ -579,6 +579,7 @@ export default defineComponent({
         return { ...todo, edited: false };
       });
     },
+
     getAllData() {
       this.valueFilter = this.todo_list.map((todo: Todo) => {
         return { ...todo, edited: false };
@@ -592,6 +593,7 @@ export default defineComponent({
 
         const nextday1 = dayjs().add(2, 'day').unix();
         const nextdayHour = dayjs().add(2, 'day').hour(0).minute(0).second(0).unix();
+
         if (dayNow1 === nextdayHour) {
           dayNow1 = dayNow;
         } else if (dayNow2 === nextdayHour) {
@@ -606,8 +608,7 @@ export default defineComponent({
           return -1
         } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
           return 1
-        }
-        else {
+        } else {
           return timestamp1 - timestamp2;
         }
       });
@@ -807,7 +808,15 @@ export default defineComponent({
         this.todo_list.splice(oldIndex, 1);
         this.todos.splice(newIndex, 0, itemToMove);
         this.todo_list.splice(newIndex, 0, itemToMove1);
-        this.getAllData();
+        if (this.forText == 'All') {
+          this.getAllData();
+        } else if (this.forText == 'Task List') {
+          this.filters(1);
+        } else if (this.forText == 'Doing List') {
+          this.filters(2);
+        } else {
+          this.filters(3);
+        }
       } catch (error) {
         console.log(error);
       }
@@ -818,6 +827,34 @@ export default defineComponent({
           return { ...todo, edited: false };
         })
         .filter((x) => x.info === info);
+      this.valueFilter.sort((a, b) => {
+        const dayNow = dayjs().hour(0).minute(0).second(0).unix();
+        let dayNow1 = dayjs(a.deadline).hour(0).unix();
+        let dayNow2 = dayjs(b.deadline).hour(0).unix();
+        const timestamp1 = dayjs(a.deadline).unix();
+        const timestamp2 = dayjs(b.deadline).unix();
+
+        const nextday1 = dayjs().add(2, 'day').unix();
+        const nextdayHour = dayjs().add(2, 'day').hour(0).minute(0).second(0).unix();
+
+        if (dayNow1 === nextdayHour) {
+          dayNow1 = dayNow;
+        } else if (dayNow2 === nextdayHour) {
+          dayNow2 = dayNow;
+        }
+
+        if (timestamp1 < nextday1 && timestamp2 > nextday1) {
+          return -1
+        } else if (timestamp1 > nextday1 && timestamp2 < nextday1) {
+          return 1
+        } else if (timestamp1 >= dayNow && timestamp2 <= dayNow) {
+          return -1
+        } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
+          return 1
+        } else {
+          return timestamp1 - timestamp2;
+        }
+      });
     },
     filtered(event: MouseEvent) {
       const selectElement = event.target as HTMLSelectElement;
