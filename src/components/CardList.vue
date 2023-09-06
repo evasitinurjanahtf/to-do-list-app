@@ -850,7 +850,7 @@ export default defineComponent({
           return -1
         } else if (timestamp1 > nextday1 && timestamp2 < nextday1) {
           return 1
-        } else if (timestamp1 >= dayNow && timestamp2 <= dayNow) {
+        } else if (timestamp1 >= dayNow && timestamp2 < dayNow) {
           return -1
         } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
           return 1
