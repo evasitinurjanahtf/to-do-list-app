@@ -604,7 +604,7 @@ export default defineComponent({
           return -1
         } else if (timestamp1 > nextday1 && timestamp2 < nextday1) {
           return 1
-        } else if (timestamp1 >= dayNow && timestamp2 <= dayNow) {
+        } else if (timestamp1 >= dayNow && timestamp2 < dayNow) {
           return -1
         } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
           return 1
@@ -612,6 +612,17 @@ export default defineComponent({
           return timestamp1 - timestamp2;
         }
       });
+    },
+    getFilter() {
+      if (this.forText == 'All') {
+        this.getAllData();
+      } else if (this.forText == 'Task List') {
+        this.filters(1);
+      } else if (this.forText == 'Doing List') {
+        this.filters(2);
+      } else {
+        this.filters(3);
+      }
     },
     closeModalError() {
       this.modalDateError = false;
@@ -644,7 +655,7 @@ export default defineComponent({
           });
         }
       };
-      this.getAllData();
+      this.getFilter();
     },
     deleteList(id: number) {
       this.indexToDelete = id;
@@ -664,11 +675,11 @@ export default defineComponent({
           this.todo_list.splice(index, 1);
         }
       };
-      this.getAllData();
+      this.getFilter();
     },
     startEdit(id: number) {
       this.getExtendedTodo();
-      this.getAllData();
+      this.getFilter();
       const item = this.todos.find(item => item.id === id);
       if (item) {
         this.changeName = item.name;
@@ -696,7 +707,7 @@ export default defineComponent({
           value.name = this.changeName;
           items.name = value.name;
         }
-        this.getAllData();
+        this.getFilter();
       };
     },
     firstDate() {
@@ -726,7 +737,7 @@ export default defineComponent({
     saveDate(id: number) {
       id = this.indexToSetDate;
       this.getExtendedTodo();
-      this.getAllData();
+      this.getFilter();
       const existingDeadline = this.todos.find(data => data.deadline === this.task_date && this.task_date !== '');
       if (existingDeadline) {
         this.modalDateError = true;
@@ -747,10 +758,11 @@ export default defineComponent({
         };
         this.deadline = false;
       }
-      this.getAllData();
+      this.getFilter();
     },
     saveOrder(container: ContainerType) {
       this.getExtendedTodo();
+      this.getFilter();
       try {
         const newIndex = container.newIndex;
         const oldIndex = container.oldIndex;
@@ -808,15 +820,6 @@ export default defineComponent({
         this.todo_list.splice(oldIndex, 1);
         this.todos.splice(newIndex, 0, itemToMove);
         this.todo_list.splice(newIndex, 0, itemToMove1);
-        if (this.forText == 'All') {
-          this.getAllData();
-        } else if (this.forText == 'Task List') {
-          this.filters(1);
-        } else if (this.forText == 'Doing List') {
-          this.filters(2);
-        } else {
-          this.filters(3);
-        }
       } catch (error) {
         console.log(error);
       }
@@ -860,15 +863,7 @@ export default defineComponent({
       const selectElement = event.target as HTMLSelectElement;
       const selectedStatus = selectElement.value;
       this.forText = selectedStatus;
-      if (selectedStatus == 'All') {
-        this.getAllData();
-      } else if (selectedStatus == 'Task List') {
-        this.filters(1);
-      } else if (selectedStatus == 'Doing List') {
-        this.filters(2);
-      } else {
-        this.filters(3);
-      }
+      this.getFilter();
     }
   }
 })
