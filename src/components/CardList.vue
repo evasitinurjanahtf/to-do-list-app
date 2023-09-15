@@ -48,6 +48,7 @@
         </div>
       </q-card>
     </q-dialog>
+
     <div class="row q-pa-lg">
       <label style="margin-right: 5px;" for="status">Select Filter Status</label>
       <select @change="filtered">
@@ -62,7 +63,7 @@
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
               <q-card flat bordered class="my-card text-white list-group-item item"
-                :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
+                :class="changeColorDate(element.deadline) == 1 ? 'bg-info' : changeColorDate(element.deadline) == 2 ? 'bg-grey-6' : 'bg-secondary'">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
@@ -141,7 +142,8 @@
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Edit</strong>
                       </q-tooltip></q-btn>
-                    <q-btn flat @click="saveEdit(element.id)"><i class="fas fa-check"></i>
+                    <q-btn :disabled="element.edited == false" flat @click="saveEdit(element.id)"><i
+                        class="fas fa-check"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Save</strong>
                       </q-tooltip>
@@ -168,7 +170,7 @@
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
               <q-card flat bordered class="my-card text-white list-group-item item"
-                :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
+                :class="changeColorDate(element.deadline) == 1 ? 'bg-info' : changeColorDate(element.deadline) == 2 ? 'bg-grey-6' : 'bg-secondary'">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
@@ -248,7 +250,8 @@
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Edit</strong>
                       </q-tooltip></q-btn>
-                    <q-btn flat @click="saveEdit(element.id)"><i class="fas fa-check"></i>
+                    <q-btn :disabled="element.edited == false" flat @click="saveEdit(element.id)"><i
+                        class="fas fa-check"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Save</strong>
                       </q-tooltip>
@@ -275,7 +278,7 @@
           <template #item="{ element }">
             <div style="margin-bottom: 10px;" :class="'random' + element.id">
               <q-card flat bordered class="my-card text-white list-group-item item"
-                :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
+                :class="changeColorDate(element.deadline) == 1 ? 'bg-info' : changeColorDate(element.deadline) == 2 ? 'bg-grey-6' : 'bg-secondary'">
                 <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                   <div class="row items-center no-wrap">
                     <div class="col">
@@ -355,7 +358,8 @@
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Edit</strong>
                       </q-tooltip></q-btn>
-                    <q-btn flat @click="saveEdit(element.id)"><i class="fas fa-check"></i>
+                    <q-btn :disabled="element.edited == false" flat @click="saveEdit(element.id)"><i
+                        class="fas fa-check"></i>
                       <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                         <strong>Save</strong>
                       </q-tooltip>
@@ -379,7 +383,7 @@
         <template v-for="element of valueFilter" :key="element.deadline">
           <div style="margin-bottom: 10px;">
             <q-card flat bordered class="my-card text-white list-group-item item"
-              :class="changeColorDate(element.deadline) == 2 ? 'bg-info' : changeColorDate(element.deadline) == 1 ? 'bg-grey-6' : 'bg-secondary'">
+              :class="changeColorDate(element.deadline) == 1 ? 'bg-info' : changeColorDate(element.deadline) == 2 ? 'bg-grey-6' : 'bg-secondary'">
               <q-card-section style="padding-top: 5px;padding-bottom: 2px;">
                 <div class="row items-center no-wrap">
                   <div class="col">
@@ -459,7 +463,8 @@
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                       <strong>Edit</strong>
                     </q-tooltip></q-btn>
-                  <q-btn flat @click="saveEdit(element.id)"><i class="fas fa-check"></i>
+                  <q-btn :disabled="element.edited == false" flat @click="saveEdit(element.id)"><i
+                      class="fas fa-check"></i>
                     <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
                       <strong>Save</strong>
                     </q-tooltip>
@@ -499,8 +504,6 @@ export default defineComponent({
     const id = Date.now();
     const todoStore = useTodoStore();
     const dayJS = dayjs;
-
-
     return {
       dayJS,
       dense: ref(false),
@@ -509,6 +512,9 @@ export default defineComponent({
       todoStore,
       todo_list: ref<Array<Todo>>([]),
       todos: ref<Array<ExtendedTodo>>([]),
+      blue: ref<Array<ExtendedTodo>>([]),
+      grey: ref<Array<ExtendedTodo>>([]),
+      green: ref<Array<ExtendedTodo>>([]),
       todo_input: ref(''),
       changeName: '',
       confirm: ref(false),
@@ -538,6 +544,50 @@ export default defineComponent({
     this.getAllData();
   },
   methods: {
+    dateSort() {
+      let arr = this.valueFilter
+      const n = arr.length;
+      const today = dayjs().hour(0).minute(0).second(0).unix();
+      const tomor = dayjs().add(2, 'day').hour(23).minute(59).second(59).unix();
+
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - 1 - i; j++) {
+          const timestamp1 = dayjs(arr[j].deadline).unix();
+          const timestamp2 = dayjs(arr[j + 1].deadline).unix();
+
+          if (!(timestamp1 <= tomor && timestamp1 >= today) && (timestamp2 <= tomor && timestamp2 >= today)) {
+            const temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+
+          if ((timestamp1 <= tomor && timestamp1 >= today) && ((timestamp2 <= tomor && timestamp2 >= today) && timestamp2 < timestamp1)) {
+            const temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+
+          if ((timestamp1 > tomor) && (timestamp2 < today)) {
+            const temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+
+          if ((timestamp1 < today) && (timestamp2 < today && timestamp2 < timestamp1)) {
+            const temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+
+          if ((timestamp1 > tomor) && (timestamp2 > tomor && timestamp2 < timestamp1)) {
+            const temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+        }
+      }
+
+    },
     addList() {
       const existingDeadline = this.todo_list.find(data => data.deadline === this.task_date && this.task_date !== '');
       if (existingDeadline) {
@@ -564,14 +614,14 @@ export default defineComponent({
       let myday = dayjs(date).hour(0).minute(0).second(0).unix();
 
       let mydayStamp = dayjs(date).unix();
-      const tomorrowStamp1 = dayjs().add(2, 'day').unix();
+      const tomorrowStamp1 = dayjs().add(2, 'day').hour(23).minute(59).second(59).unix();
 
       if (myday >= dayNow && mydayStamp < tomorrowStamp1) {
-        return 2;
-      } else if (myday < dayNow && mydayStamp < tomorrowStamp1) {
         return 1;
+      } else if (myday < dayNow && mydayStamp < tomorrowStamp1) {
+        return 2;
       } else {
-        return 0;
+        return 3;
       }
     },
     getExtendedTodo() {
@@ -579,39 +629,18 @@ export default defineComponent({
         return { ...todo, edited: false };
       });
     },
-
+    getAllValueFilter() {
+      this.valueFilter = this.todo_list.map((todo: Todo) => {
+        return { ...todo, edited: false };
+      });
+      this.dateSort();
+    },
     getAllData() {
       this.valueFilter = this.todo_list.map((todo: Todo) => {
         return { ...todo, edited: false };
       });
-      this.valueFilter.sort((a, b) => {
-        const dayNow = dayjs().hour(0).minute(0).second(0).unix();
-        let dayNow1 = dayjs(a.deadline).hour(0).unix();
-        let dayNow2 = dayjs(b.deadline).hour(0).unix();
-        const timestamp1 = dayjs(a.deadline).unix();
-        const timestamp2 = dayjs(b.deadline).unix();
-
-        const nextday1 = dayjs().add(2, 'day').unix();
-        const nextdayHour = dayjs().add(2, 'day').hour(0).minute(0).second(0).unix();
-
-        if (dayNow1 === nextdayHour) {
-          dayNow1 = dayNow;
-        } else if (dayNow2 === nextdayHour) {
-          dayNow2 = dayNow;
-        }
-
-        if (timestamp1 < nextday1 && timestamp2 > nextday1) {
-          return -1
-        } else if (timestamp1 > nextday1 && timestamp2 < nextday1) {
-          return 1
-        } else if (timestamp1 >= dayNow && timestamp2 < dayNow) {
-          return -1
-        } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
-          return 1
-        } else {
-          return timestamp1 - timestamp2;
-        }
-      });
+      this.dateSort();
+      this.getAllValueFilter();
     },
     getFilter() {
       if (this.forText == 'All') {
@@ -620,7 +649,7 @@ export default defineComponent({
         this.filters(1);
       } else if (this.forText == 'Doing List') {
         this.filters(2);
-      } else {
+      } else if (this.forText == 'Done List') {
         this.filters(3);
       }
     },
@@ -697,15 +726,18 @@ export default defineComponent({
         this.getExtendedTodo();
         const item = this.todos.find(item => item.id === id);
         if (item) {
-          item.edited = false;
-          item.name = this.changeName;
-          items.name = item.name;
+          if (item.edited = true) {
+            item.edited = false;
+            item.name = this.changeName;
+          }
         }
         const value = this.valueFilter.find(value => value.id);
         if (value) {
-          value.edited = false;
-          value.name = this.changeName;
-          items.name = value.name;
+          if (value.edited = true) {
+            value.edited = false;
+            value.name = this.changeName;
+            items.name = value.name;
+          }
         }
         this.getFilter();
       };
@@ -830,34 +862,7 @@ export default defineComponent({
           return { ...todo, edited: false };
         })
         .filter((x) => x.info === info);
-      this.valueFilter.sort((a, b) => {
-        const dayNow = dayjs().hour(0).minute(0).second(0).unix();
-        let dayNow1 = dayjs(a.deadline).hour(0).unix();
-        let dayNow2 = dayjs(b.deadline).hour(0).unix();
-        const timestamp1 = dayjs(a.deadline).unix();
-        const timestamp2 = dayjs(b.deadline).unix();
-
-        const nextday1 = dayjs().add(2, 'day').unix();
-        const nextdayHour = dayjs().add(2, 'day').hour(0).minute(0).second(0).unix();
-
-        if (dayNow1 === nextdayHour) {
-          dayNow1 = dayNow;
-        } else if (dayNow2 === nextdayHour) {
-          dayNow2 = dayNow;
-        }
-
-        if (timestamp1 < nextday1 && timestamp2 > nextday1) {
-          return -1
-        } else if (timestamp1 > nextday1 && timestamp2 < nextday1) {
-          return 1
-        } else if (timestamp1 >= dayNow && timestamp2 < dayNow) {
-          return -1
-        } else if (timestamp1 < dayNow && timestamp2 > dayNow) {
-          return 1
-        } else {
-          return timestamp1 - timestamp2;
-        }
-      });
+      this.dateSort();
     },
     filtered(event: MouseEvent) {
       const selectElement = event.target as HTMLSelectElement;

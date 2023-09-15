@@ -4,7 +4,6 @@ export interface Todo {
   deadline: string;
   info: number;
 }
-
 export interface ExtendedTodo extends Todo {
   edited: boolean;
 }
